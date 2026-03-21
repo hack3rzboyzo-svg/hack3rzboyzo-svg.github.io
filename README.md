@@ -118,3 +118,52 @@ Subscribe on YouTube
 
 </body>
 </html>
+<section class="games">
+    <h2>🎮 Games I Coded While Bored</h2>
+    <p>Some random Python games I made when I had nothing to do 😄</p>
+  <div class="game-list">
+        <div class="game-card">
+            <h3>Snake Game 🐍</h3>
+            <p>A simple snake game made in Python.</p>
+            <a href="https://replit.com/@hack3rzboyzo/Physics-Simulator">▶ Play</a>
+            <a href="snake.py" download>⬇ Download</a>
+        </div>
+   <div class="game-card">
+            <h3>Number Guess 🔢</h3>
+            <p>Try to guess the number!</p>
+            <a href="https://replit.com" target="_blank">▶ Play</a>
+            <a href="guess.py" download>⬇ Download</a>
+        </div>
+  </div>
+</section>
+
+<style>
+.games{
+    margin-top:40px;
+    text-align:center;
+}
+
+.game-list{
+    display:flex;
+    gap:20px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+.game-card{
+    background:#1e1e1e;
+    padding:20px;
+    border-radius:10px;
+    width:250px;
+}
+
+.game-card a{
+    display:inline-block;
+    margin:10px;
+    padding:8px 12px;
+    background:#ff4444;
+    color:white;
+    text-decoration:none;
+    border-radius:5px;
+}
+</style>
