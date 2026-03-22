@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1">&lt;title&gt;Snake Game&lt;/title&gt;</p>
+<p class="p1">&lt;style&gt;</p>
+<p class="p1">body {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: black;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: white;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-family: monospace;</p>
+<p class="p1">}</p>
+<p class="p1">canvas {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border: 2px solid lime;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-top: 20px;</p>
+<p class="p1">}</p>
+<p class="p1">button {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-top: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: lime;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border: none;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cursor: pointer;</p>
+<p class="p1">}</p>
+<p class="p1">&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;h1&gt;🐍 Snake Game&lt;/h1&gt;</p>
+<p class="p1">&lt;p&gt;Arrow keys to move • R to restart&lt;/p&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;canvas id="game" width="600" height="400"&gt;&lt;/canvas&gt;</p>
+<p class="p1">&lt;br&gt;</p>
+<p class="p1">&lt;button onclick="resetGame()"&gt;Restart&lt;/button&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;script&gt;</p>
+<p class="p1">const canvas = document.getElementById("game");</p>
+<p class="p1">const ctx = canvas.getContext("2d");</p>
+<p class="p2"><br></p>
+<p class="p1">const CELL = 10;</p>
+<p class="p1">let snake, direction, apple, gameOver, score;</p>
+<p class="p2"><br></p>
+<p class="p1">function randomCell() {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>x: Math.floor(Math.random() * (canvas.width / CELL)) * CELL,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>y: Math.floor(Math.random() * (canvas.height / CELL)) * CELL</p>
+<p class="p1"><span class="Apple-converted-space">    </span>};</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function resetGame() {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>snake = [{x:100,y:100},{x:90,y:100},{x:80,y:100}];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>direction = {x:CELL,y:0};</p>
+<p class="p1"><span class="Apple-converted-space">    </span>apple = randomCell();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>gameOver = false;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>score = 0;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">document.addEventListener("keydown", e =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (e.key === "ArrowUp") direction = {x:0,y:-CELL};</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (e.key === "ArrowDown") direction = {x:0,y:CELL};</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (e.key === "ArrowLeft") direction = {x:-CELL,y:0};</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (e.key === "ArrowRight") direction = {x:CELL,y:0};</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (e.key === "r") resetGame();</p>
+<p class="p1">});</p>
+<p class="p2"><br></p>
+<p class="p1">function update() {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (gameOver) return;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const head = {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>x: snake[0].x + direction.x,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>y: snake[0].y + direction.y</p>
+<p class="p1"><span class="Apple-converted-space">    </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// collision</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (</p>
+<p class="p1"><span class="Apple-converted-space">        </span>head.x &lt; 0 || head.y &lt; 0 ||</p>
+<p class="p1"><span class="Apple-converted-space">        </span>head.x &gt;= canvas.width || head.y &gt;= canvas.height ||</p>
+<p class="p1"><span class="Apple-converted-space">        </span>snake.some(s =&gt; s.x === head.x &amp;&amp; s.y === head.y)</p>
+<p class="p1"><span class="Apple-converted-space">    </span>) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>gameOver = true;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>snake.unshift(head);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (head.x === apple.x &amp;&amp; head.y === apple.y) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>apple = randomCell();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>score++;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>snake.pop();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function draw() {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>ctx.fillStyle = "black";</p>
+<p class="p1"><span class="Apple-converted-space">    </span>ctx.fillRect(0,0,canvas.width,canvas.height);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// snake</p>
+<p class="p1"><span class="Apple-converted-space">    </span>ctx.fillStyle = "lime";</p>
+<p class="p1"><span class="Apple-converted-space">    </span>snake.forEach(s =&gt; ctx.fillRect(s.x,s.y,CELL,CELL));</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// apple</p>
+<p class="p1"><span class="Apple-converted-space">    </span>ctx.fillStyle = "red";</p>
+<p class="p1"><span class="Apple-converted-space">    </span>ctx.fillRect(apple.x,apple.y,CELL,CELL);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// score</p>
+<p class="p1"><span class="Apple-converted-space">    </span>ctx.fillStyle = "white";</p>
+<p class="p1"><span class="Apple-converted-space">    </span>ctx.fillText("Score: " + score, 10, 15);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (gameOver) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>ctx.fillStyle = "yellow";</p>
+<p class="p1"><span class="Apple-converted-space">        </span>ctx.font = "40px monospace";</p>
+<p class="p1"><span class="Apple-converted-space">        </span>ctx.fillText("GAME OVER", 150, 200);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function gameLoop() {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>update();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>draw();</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">resetGame();</p>
+<p class="p1">setInterval(gameLoop, 100);</p>
+<p class="p1">&lt;/script&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
