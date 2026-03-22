@@ -167,7 +167,7 @@ allowfullscreen>
 <a href="https://replit.com" target="_blank">▶ Play</a>
 </div>
     <div>
-        <a href="kindahomelesshtmlworkinprogress.html">broke website🥀</a>
+        <a href="./kindahomelesshtmlworkinprogress.html">broke website🥀</a>
 </div>
 </section>
 </div>
