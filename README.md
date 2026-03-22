@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>JIJ THE TUBER</title>
+<title>JJTHEANIMATOR</title>
 
 <style>
 body{
@@ -82,7 +82,7 @@ footer{
 <body>
 
 <header>
-<h1>JIJ THE TUBER</h1>
+<h1>JJTHEANIMATOR</h1>
 <p>Gaming • Funny Videos • Content Creation</p>
 </header>
 
