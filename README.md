@@ -109,7 +109,7 @@ footer{
 
 <header>
 <h1>JJTHEANIMATOR</h1>
-<p>Gaming • Funny Videos • Content Creation</p>
+<p>Animating • Funny Videos • Content Creation • Blender</p>
 </header>
 
 <div class="container">
