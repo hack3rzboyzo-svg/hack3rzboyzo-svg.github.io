@@ -102,9 +102,36 @@ footer{
     text-decoration:none;
     border-radius:5px;
 }
+    button{
+    margin:5px;
+    padding:10px 15px;
+    background:#00ff00;
+    border:none;
+    border-radius:6px;
+    font-weight:bold;
+    cursor:pointer;
+}
+button:hover{
+    background:#00cc00;
+}
 </style>
 </head>
+<script>
+function startGame() {
+    document.getElementById("gameContainer").style.display = "block";
+}
 
+function fullscreenGame() {
+    let iframe = document.getElementById("gameFrame");
+    if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+    } else if (iframe.webkitRequestFullscreen) {
+        iframe.webkitRequestFullscreen();
+    } else if (iframe.msRequestFullscreen) {
+        iframe.msRequestFullscreen();
+    }
+}
+</script>
 <body>
 
 <header>
@@ -144,10 +171,17 @@ allowfullscreen>
 <div class="game-list">
 
 <div class="game-card">
-<h3>Snake Game 🐍</h3>
-<p>Play it right here!</p>
-<iframe src="snake.html"></iframe>
-<a href="snake.html" download>⬇ Download</a>
+    <h3>Snake Game 🐍</h3>
+    <p>Play it right here!</p>
+  <!-- PLAY BUTTON (always visible) -->
+    <button onclick="startGame()">▶ Play</button>
+    <!-- GAME (hidden at first) -->
+ <div id="gameContainer" style="display:none; margin-top:10px;">
+        <iframe id="gameFrame" src="snake.html"></iframe>
+        <br>
+        <button onclick="fullscreenGame()">🖥 Fullscreen</button>
+    </div>
+ <a href="snake.html" download>⬇ Download</a>
 </div>
 
 <div class="game-card">
