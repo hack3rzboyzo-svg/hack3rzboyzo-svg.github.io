@@ -123,7 +123,7 @@ button:hover{
 
 <header>
 <h1>JJTHEANIMATOR</h1>
-<p>Gaming • Funny Videos • Content Creation</p>
+<p>Blender • Funny Videos • Content Creation • Animating</p>
 </header>
 
 <div class="container">
