@@ -1,17 +1,8 @@
-# HTML5 Games
-
-A collection of old style addictive games writen in JavaScript, HTML and CSS.
-
-
-## Play
-
-Go [play](http://tommalbran.github.io/games/) and have fun :)
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>JJTHEANIMATOR</title>
-
 <style>
 body{
     margin:0;
