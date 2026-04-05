@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2D Overhead Shooter - Setup</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #0d1222;
+      color: #e6f9e6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .screen {
+      width: min(900px, 100%);
+      max-width: 900px;
+      background: #111827;
+      border: 2px solid #1f5f2f;
+      border-radius: 16px;
+      box-shadow: 0 0 40px rgba(0, 255, 136, 0.15);
+      overflow: hidden;
+    }
+
+    .page {
+      padding: 24px;
+    }
+
+    .page h1 {
+      margin-bottom: 12px;
+      color: #68f58b;
+      font-size: clamp(1.8rem, 2.5vw, 2.5rem);
+    }
+
+    .page p {
+      margin-bottom: 18px;
+      color: #a8c6a8;
+      line-height: 1.6;
+    }
+
+    .menu-grid {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .menu-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    label {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 8px;
+      color: #c0f7c0;
+      font-weight: 600;
+      min-width: 180px;
+    }
+
+    select, input[type="range"], input[type="checkbox"] {
+      width: 100%;
+      max-width: 300px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #3b6b3b;
+      background: #162822;
+      color: #e6f9e6;
+      outline: none;
+    }
+
+    input[type="range"] {
+      accent-color: #68f58b;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      margin-right: 10px;
+    }
+
+    .button-bar {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 14px 22px;
+      cursor: pointer;
+      color: #0f172a;
+      background: #7ce687;
+      font-weight: 700;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); background: #96f59c; }
+
+    .hidden { display: none !important; }
+
+    #gameContainer {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      aspect-ratio: 4 / 3;
+      background: #0f172a;
+      border-top: 1px solid #264b2f;
+      border-bottom: 1px solid #264b2f;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: pixelated;
+      background: #0f172a;
+    }
+
+    #hud {
+      display: grid;
+      gap: 12px;
+      padding: 18px 24px;
+      color: #cbe8c8;
+      font-size: 0.95rem;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      border-top: 1px solid #264b2f;
+    }
+
+    .player-hud {
+      padding: 12px 14px;
+      border: 1px solid #2f5f3f;
+      border-radius: 12px;
+      background: rgba(12, 20, 34, 0.75);
+    }
+
+    .player1-hud { border-color: #4ade80; }
+    .player2-hud { border-color: #f472b6; }
+    .player3-hud { border-color: #facc15; }
+
+    #gameOverScreen {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 10;
+      padding: 24px;
+      text-align: center;
+    }
+
+    #gameOverScreen h2 {
+      color: #fb7185;
+      font-size: clamp(2rem, 3vw, 3rem);
+    }
+
+    #gameOverScreen p { color: #bef264; font-size: 1.1rem; }
+
+    #gameOverScreen .button-bar {
+      flex-direction: row;
+    }
+
+    /* Touch controls */
+    .touch-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 200px;
+      display: none;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 5;
+    }
+
+    .touch-joysticks {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      height: 100%;
+      padding: 10px;
+    }
+
+    .joystick {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .joystick-circle {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid #68f58b;
+    }
+
+    .arrow {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #68f58b;
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .arrow.up { top: 5px; left: 50%; transform: translateX(-50%); }
+    .arrow.down { bottom: 5px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+    .arrow.left { left: 5px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+    .arrow.right { right: 5px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+
+    .shoot-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #ff6b6b;
+      border: 2px solid #fff;
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shoot-btn:active { background: #ff5252; }
+
+    @media (max-width: 768px) {
+      .touch-controls { display: flex; }
+      #hud { font-size: 0.8rem; padding: 12px 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen" id="menuScreen">
+    <div class="page">
+      <h1>2D Overhead Shooter</h1>
+      <p>Select the number of players and adjust enemy behavior before starting the match.</p>
+
+      <div class="menu-grid">
+        <div class="menu-row">
+          <label>
+            Player count
+            <select id="playerCount">
+              <option value="1">1 Player</option>
+              <option value="2">2 Players</option>
+              <option value="3" selected>3 Players</option>
+            </select>
+          </label>
+
+          <label>
+            Enemy speed
+            <input id="enemySpeed" type="range" min="1" max="6" value="2" />
+            <span id="enemySpeedValue">2</span>
+          </label>
+        </div>
+
+        <div class="menu-row">
+          <label>
+            Enemy hit damage
+            <input id="enemyDamage" type="range" min="1" max="10" value="2" />
+            <span id="enemyDamageValue">2</span>
+          </label>
+
+          <label>
+            Enemy health
+            <input id="enemyHealth" type="range" min="10" max="50" value="20" />
+            <span id="enemyHealthValue">20</span>
+          </label>
+        </div>
+
+        <div class="menu-row">
+          <label>
+            Touchscreen mode
+            <input id="touchscreenMode" type="checkbox" />
+            Enable virtual controls for mobile/touchscreen
+          </label>
+        </div>
+      </div>
+
+      <div class="button-bar">
+        <button id="startGameBtn">START GAME</button>
+        <button id="openControlsBtn">SHOW CONTROLS</button>
+      </div>
+
+      <div id="controlsInfo" class="hidden">
+        <p><strong>Player 1</strong> (Green): WASD to move, mouse to aim, click to shoot.</p>
+        <p><strong>Player 2</strong> (Pink): Arrow keys to move, mouse to aim, click to shoot.</p>
+        <p><strong>Player 3</strong> (Gold): IJKL to move, J or L to shoot.</p>
+        <p><strong>Touchscreen Mode:</strong> Use the virtual joysticks below the game area.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen hidden" id="gameScreen">
+    <div id="gameContainer">
+      <canvas id="gameCanvas"></canvas>
+      <div id="gameOverScreen">
+        <h2>GAME OVER</h2>
+        <p id="finalScores"></p>
+        <div class="button-bar">
+          <button id="restartBtn">RESTART</button>
+          <button id="returnMenuBtn">BACK TO MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="hud">
+      <div class="player-hud player1-hud" id="hud1">
+        <strong>Player 1</strong><br />
+        Health: <span id="health1">100</span><br />
+        Score: <span id="score1">0</span>
+      </div>
+      <div class="player-hud player2-hud" id="hud2">
+        <strong>Player 2</strong><br />
+        Health: <span id="health2">100</span><br />
+        Score: <span id="score2">0</span>
+      </div>
+      <div class="player-hud player3-hud" id="hud3">
+        <strong>Player 3</strong><br />
+        Health: <span id="health3">100</span><br />
+        Score: <span id="score3">0</span>
+      </div>
+      <div class="player-hud">
+        Wave: <span id="wave">1</span><br />
+        Enemies: <span id="enemyCount">0</span>
+      </div>
+    </div>
+
+    <!-- Touch controls -->
+    <div class="touch-controls" id="touchControls">
+      <div class="touch-joysticks">
+        <div class="joystick" id="joystick1">
+          <div class="joystick-circle">
+            <div class="arrow up" data-dir="up" data-player="0"></div>
+            <div class="arrow down" data-dir="down" data-player="0"></div>
+            <div class="arrow left" data-dir="left" data-player="0"></div>
+            <div class="arrow right" data-dir="right" data-player="0"></div>
+          </div>
+          <div class="shoot-btn" data-player="0">SHOOT</div>
+        </div>
+        <div class="joystick" id="joystick2">
+          <div class="joystick-circle">
+            <div class="arrow up" data-dir="up" data-player="1"></div>
+            <div class="arrow down" data-dir="down" data-player="1"></div>
+            <div class="arrow left" data-dir="left" data-player="1"></div>
+            <div class="arrow right" data-dir="right" data-player="1"></div>
+          </div>
+          <div class="shoot-btn" data-player="1">SHOOT</div>
+        </div>
+        <div class="joystick" id="joystick3">
+          <div class="joystick-circle">
+            <div class="arrow up" data-dir="up" data-player="2"></div>
+            <div class="arrow down" data-dir="down" data-player="2"></div>
+            <div class="arrow left" data-dir="left" data-player="2"></div>
+            <div class="arrow right" data-dir="right" data-player="2"></div>
+          </div>
+          <div class="shoot-btn" data-player="2">SHOOT</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const menuScreen = document.getElementById('menuScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const gameCanvas = document.getElementById('gameCanvas');
+    const ctx = gameCanvas.getContext('2d');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const finalScores = document.getElementById('finalScores');
+
+    const playerCountInput = document.getElementById('playerCount');
+    const enemySpeedInput = document.getElementById('enemySpeed');
+    const enemyDamageInput = document.getElementById('enemyDamage');
+    const enemyHealthInput = document.getElementById('enemyHealth');
+    const touchscreenModeInput = document.getElementById('touchscreenMode');
+
+    const enemySpeedValue = document.getElementById('enemySpeedValue');
+    const enemyDamageValue = document.getElementById('enemyDamageValue');
+    const enemyHealthValue = document.getElementById('enemyHealthValue');
+
+    const controlsInfo = document.getElementById('controlsInfo');
+
+    const hud1 = document.getElementById('hud1');
+    const hud2 = document.getElementById('hud2');
+    const hud3 = document.getElementById('hud3');
+
+    const scoreEls = [document.getElementById('score1'), document.getElementById('score2'), document.getElementById('score3')];
+    const healthEls = [document.getElementById('health1'), document.getElementById('health2'), document.getElementById('health3')];
+    const waveEl = document.getElementById('wave');
+    const enemyCountEl = document.getElementById('enemyCount');
+
+    const startGameBtn = document.getElementById('startGameBtn');
+    const openControlsBtn = document.getElementById('openControlsBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const returnMenuBtn = document.getElementById('returnMenuBtn');
+
+    const touchControls = document.getElementById('touchControls');
+    const joysticks = [document.getElementById('joystick1'), document.getElementById('joystick2'), document.getElementById('joystick3')];
+
+    let gameState;
+    let settings = {
+      playerCount: 3,
+      enemySpeed: 2,
+      enemyDamage: 2,
+      enemyHealth: 20,
+      touchscreenMode: false
+    };
+
+    let players = [];
+    let enemies = [];
+    let bullets = [];
+    let walls = [];
+    let keys = {};
+    let mouse = { x: 0, y: 0 };
+    let touchInputs = [{}, {}, {}]; // For each player
+    let rafId;
+
+    const canvasWidth = 900;
+    const canvasHeight = 675;
+    gameCanvas.width = canvasWidth;
+    gameCanvas.height = canvasHeight;
+
+    class Player {
+      constructor(x, y, id, color) {
+        this.x = x;
+        this.y = y;
+        this.id = id;
+        this.color = color;
+        this.radius = 14;
+        this.speed = 5;
+        this.health = 100;
+        this.maxHealth = 100;
+        this.angle = 0;
+        this.lastShotTime = 0;
+        this.shootCooldown = 180;
+        this.dead = false;
+      }
+
+      handleInput(keys, mouseX, mouseY, touchInput) {
+        if (this.dead) return;
+
+        let moveX = 0, moveY = 0;
+
+        if (settings.touchscreenMode) {
+          // Touch input
+          if (touchInput.up) moveY -= 1;
+          if (touchInput.down) moveY += 1;
+          if (touchInput.left) moveX -= 1;
+          if (touchInput.right) moveX += 1;
+          this.angle = 0; // Default aim for touch
+        } else {
+          // Keyboard input
+          if (this.id === 0) {
+            if (keys['w'] || keys['W']) moveY -= 1;
+            if (keys['s'] || keys['S']) moveY += 1;
+            if (keys['a'] || keys['A']) moveX -= 1;
+            if (keys['d'] || keys['D']) moveX += 1;
+            this.angle = Math.atan2(mouseY - this.y, mouseX - this.x);
+          }
+          else if (this.id === 1) {
+            if (keys['ArrowUp']) moveY -= 1;
+            if (keys['ArrowDown']) moveY += 1;
+            if (keys['ArrowLeft']) moveX -= 1;
+            if (keys['ArrowRight']) moveX += 1;
+            this.angle = Math.atan2(mouseY - this.y, mouseX - this.x);
+          }
+          else if (this.id === 2) {
+            if (keys['i'] || keys['I']) moveY -= 1;
+            if (keys['k'] || keys['K']) moveY += 1;
+            if (keys['j'] || keys['J']) moveX -= 1;
+            if (keys['l'] || keys['L']) moveX += 1;
+            this.angle = 0;
+          }
+        }
+
+        // Normalize diagonal movement
+        if (moveX !== 0 && moveY !== 0) {
+          moveX *= 0.707; // 1/sqrt(2)
+          moveY *= 0.707;
+        }
+
+        this.x += moveX * this.speed;
+        this.y += moveY * this.speed;
+
+        this.x = Math.max(this.radius, Math.min(canvasWidth - this.radius, this.x));
+        this.y = Math.max(this.radius, Math.min(canvasHeight - this.radius, this.y));
+      }
+
+      shoot(bullets) {
+        const now = Date.now();
+        if (now - this.lastShotTime < this.shootCooldown || this.dead) return;
+
+        const speed = 9;
+        const bx = this.x + Math.cos(this.angle) * (this.radius + 6);
+        const by = this.y + Math.sin(this.angle) * (this.radius + 6);
+        bullets.push(new Bullet(bx, by, this.angle, speed, this.id));
+        this.lastShotTime = now;
+      }
+
+      takeDamage(amount) {
+        if (this.dead) return true;
+        this.health -= amount;
+        if (this.health <= 0) {
+          this.dead = true;
+          return true;
+        }
+        return false;
+      }
+
+      draw() {
+        if (this.dead) return;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x + Math.cos(this.angle) * 24, this.y + Math.sin(this.angle) * 24);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ff4d4d';
+        ctx.fillRect(this.x - 18, this.y - 30, 36, 5);
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x - 18, this.y - 30, (this.health / this.maxHealth) * 36, 5);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('P' + (this.id + 1), this.x, this.y + 4);
+      }
+    }
+
+    class Bullet {
+      constructor(x, y, angle, speed, owner) {
+        this.x = x;
+        this.y = y;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.radius = 4;
+        this.owner = owner;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+      }
+
+      draw() {
+        ctx.fillStyle = '#f8d030';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      outOfBounds() {
+        return this.x < -10 || this.x > canvasWidth + 10 || this.y < -10 || this.y > canvasHeight + 10;
+      }
+    }
+
+    class Enemy {
+      constructor(x, y, speed, health) {
+        this.x = x;
+        this.y = y;
+        this.speed = speed;
+        this.radius = 12;
+        this.health = health;
+        this.maxHealth = health;
+        this.vx = 0;
+        this.vy = 0;
+      }
+
+      update(players) {
+        let target = null;
+        let best = 1e9;
+        for (const player of players) {
+          if (player.dead) continue;
+          const dx = player.x - this.x;
+          const dy = player.y - this.y;
+          const d = Math.hypot(dx, dy);
+          if (d < best) {
+            best = d;
+            target = player;
+          }
+        }
+        if (!target) return;
+
+        const dx = target.x - this.x;
+        const dy = target.y - this.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist > 0.1) {
+          this.vx = (dx / dist) * this.speed;
+          this.vy = (dy / dist) * this.speed;
+        }
+
+        // Move
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Wall collision
+        for (const wall of walls) {
+          if (wall.collides(this.x, this.y, this.radius)) {
+            // Push back
+            if (this.x < wall.x + wall.w / 2) {
+              this.x = wall.x - this.radius;
+            } else {
+              this.x = wall.x + wall.w + this.radius;
+            }
+            if (this.y < wall.y + wall.h / 2) {
+              this.y = wall.y - this.radius;
+            } else {
+              this.y = wall.y + wall.h + this.radius;
+            }
+          }
+        }
+
+        // Boundary
+        this.x = Math.max(this.radius, Math.min(canvasWidth - this.radius, this.x));
+        this.y = Math.max(this.radius, Math.min(canvasHeight - this.radius, this.y));
+      }
+
+      takeDamage(amount) {
+        this.health -= amount;
+        return this.health <= 0;
+      }
+
+      draw() {
+        ctx.fillStyle = '#f87171';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(this.x - 15, this.y - 22, (this.health / this.maxHealth) * 30, 4);
+      }
+    }
+
+    class Wall {
+      constructor(x, y, w, h) {
+        this.x = x; this.y = y;
+        this.w = w; this.h = h;
+      }
+
+      draw() {
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(this.x, this.y, this.w, this.h);
+      }
+
+      collides(x, y, r) {
+        const cx = Math.max(this.x, Math.min(x, this.x + this.w));
+        const cy = Math.max(this.y, Math.min(y, this.y + this.h));
+        const dx = x - cx;
+        const dy = y - cy;
+        return dx * dx + dy * dy < r * r;
+      }
+    }
+
+    function initSettings() {
+      enemySpeedValue.textContent = settings.enemySpeed;
+      enemyDamageValue.textContent = settings.enemyDamage;
+      enemyHealthValue.textContent = settings.enemyHealth;
+      playerCountInput.value = settings.playerCount;
+      touchscreenModeInput.checked = settings.touchscreenMode;
+    }
+
+    enemySpeedInput.addEventListener('input', () => {
+      settings.enemySpeed = Number(enemySpeedInput.value);
+      enemySpeedValue.textContent = settings.enemySpeed;
+    });
+    enemyDamageInput.addEventListener('input', () => {
+      settings.enemyDamage = Number(enemyDamageInput.value);
+      enemyDamageValue.textContent = settings.enemyDamage;
+    });
+    enemyHealthInput.addEventListener('input', () => {
+      settings.enemyHealth = Number(enemyHealthInput.value);
+      enemyHealthValue.textContent = settings.enemyHealth;
+    });
+    playerCountInput.addEventListener('change', () => {
+      settings.playerCount = Number(playerCountInput.value);
+    });
+    touchscreenModeInput.addEventListener('change', () => {
+      settings.touchscreenMode = touchscreenModeInput.checked;
+    });
+
+    openControlsBtn.addEventListener('click', () => {
+      controlsInfo.classList.toggle('hidden');
+    });
+
+    startGameBtn.addEventListener('click', () => {
+      settings.playerCount = Number(playerCountInput.value);
+      settings.touchscreenMode = touchscreenModeInput.checked;
+      startGame();
+    });
+
+    restartBtn.addEventListener('click', () => {
+      gameOverScreen.style.display = 'none';
+      startGame();
+    });
+
+    returnMenuBtn.addEventListener('click', () => {
+      cancelAnimationFrame(rafId);
+      gameOverScreen.style.display = 'none';
+      gameScreen.classList.add('hidden');
+      menuScreen.classList.remove('hidden');
+    });
+
+    function startGame() {
+      menuScreen.classList.add('hidden');
+      gameScreen.classList.remove('hidden');
+      gameOverScreen.style.display = 'none';
+
+      touchControls.style.display = settings.touchscreenMode ? 'flex' : 'none';
+      joysticks.forEach((joy, i) => {
+        joy.style.display = i < settings.playerCount ? 'flex' : 'none';
+      });
+
+      gameState = {
+        running: true,
+        wave: 1,
+        scores: Array(settings.playerCount).fill(0),
+        activePlayers: settings.playerCount
+      };
+
+      hud1.style.display = settings.playerCount >= 1 ? 'block' : 'none';
+      hud2.style.display = settings.playerCount >= 2 ? 'block' : 'none';
+      hud3.style.display = settings.playerCount >= 3 ? 'block' : 'none';
+
+      players = [
+        new Player(120, canvasHeight / 2, 0, '#22c55e'),
+        new Player(canvasWidth / 2, canvasHeight / 2, 1, '#ec4899'),
+        new Player(canvasWidth - 120, canvasHeight / 2, 2, '#facc15')
+      ].slice(0, settings.playerCount);
+
+      bullets = [];
+      createWalls();
+      enemies = [];
+      spawnEnemies();
+      updateHUD();
+      gameLoop();
+    }
+
+    function createWalls() {
+      walls = [
+        new Wall(90, 140, 220, 28),
+        new Wall(590, 140, 220, 28),
+        new Wall(90, 510, 220, 28),
+        new Wall(590, 510, 220, 28),
+        new Wall(430, 260, 28, 150),
+        new Wall(450, 260, 120, 28),
+      ];
+    }
+
+    function spawnEnemies() {
+      const count = 3 + gameState.wave;
+      for (let i = 0; i < count; i++) {
+        let x, y, valid;
+        do {
+          valid = true;
+          x = Math.random() * (canvasWidth - 120) + 60;
+          y = Math.random() * (canvasHeight - 120) + 60;
+          for (const player of players) {
+            if (Math.abs(x - player.x) < 140 && Math.abs(y - player.y) < 140) valid = false;
+          }
+        } while (!valid);
+        enemies.push(new Enemy(x, y, settings.enemySpeed, settings.enemyHealth));
+      }
+    }
+
+    function checkCollisions() {
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        const shot = bullets[i];
+        let hit = false;
+        for (let j = enemies.length - 1; j >= 0; j--) {
+          const enemy = enemies[j];
+          const d = Math.hypot(shot.x - enemy.x, shot.y - enemy.y);
+          if (d < shot.radius + enemy.radius) {
+            if (enemy.takeDamage(25)) {
+              enemies.splice(j, 1);
+              gameState.scores[shot.owner] += 100;
+            }
+            hit = true;
+            break;
+          }
+        }
+        if (hit) bullets.splice(i, 1);
+      }
+
+      for (const player of players) {
+        if (player.dead) continue;
+        for (const enemy of enemies) {
+          const d = Math.hypot(player.x - enemy.x, player.y - enemy.y);
+          if (d < player.radius + enemy.radius) {
+            if (player.takeDamage(settings.enemyDamage)) {
+              gameState.activePlayers--;
+            }
+          }
+        }
+      }
+
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        if (walls.some(w => w.collides(bullets[i].x, bullets[i].y, bullets[i].radius))) {
+          bullets.splice(i, 1);
+        }
+      }
+
+      for (const player of players) {
+        for (const wall of walls) {
+          if (wall.collides(player.x, player.y, player.radius)) {
+            if (player.x < wall.x + wall.w / 2) {
+              player.x = wall.x - player.radius;
+            } else {
+              player.x = wall.x + wall.w + player.radius;
+            }
+          }
+        }
+      }
+
+      for (let i = 0; i < players.length; i++) {
+        for (let j = i + 1; j < players.length; j++) {
+          const a = players[i];
+          const b = players[j];
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          const dist = Math.hypot(dx, dy);
+          const min = a.radius + b.radius;
+          if (dist < min && dist > 0.1) {
+            const overlap = (min - dist) / 2;
+            const nx = dx / dist;
+            const ny = dy / dist;
+            a.x += nx * overlap;
+            a.y += ny * overlap;
+            b.x -= nx * overlap;
+            b.y -= ny * overlap;
+          }
+        }
+      }
+    }
+
+    function update() {
+      if (!gameState.running) return;
+
+      for (let i = 0; i < players.length; i++) {
+        players[i].handleInput(keys, mouse.x, mouse.y, touchInputs[i]);
+      }
+
+      bullets.forEach(b => b.update());
+      enemies.forEach(e => e.update(players));
+
+      bullets = bullets.filter(b => !b.outOfBounds());
+      checkCollisions();
+
+      if (enemies.length === 0) {
+        gameState.wave++;
+        spawnEnemies();
+      }
+
+      if (gameState.activePlayers <= 0) {
+        gameState.running = false;
+      }
+    }
+
+    function draw() {
+      ctx.fillStyle = '#0b1220';
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      walls.forEach(w => w.draw());
+      enemies.forEach(e => e.draw());
+      bullets.forEach(b => b.draw());
+      players.forEach(p => p.draw());
+
+      ctx.fillStyle = '#a5f3fc';
+      ctx.font = 'bold 18px Arial';
+      ctx.textAlign = 'right';
+      ctx.fillText(`Wave: ${gameState.wave}`, canvasWidth - 20, 32);
+    }
+
+    function updateHUD() {
+      players.forEach((player, index) => {
+        healthEls[index].textContent = Math.max(0, player.health);
+        scoreEls[index].textContent = gameState.scores[index] || 0;
+      });
+      waveEl.textContent = gameState.wave;
+      enemyCountEl.textContent = enemies.length;
+    }
+
+    function showGameOver() {
+      const sorted = gameState.scores.map((score, index) => ({
+        player: index + 1,
+        score
+      })).sort((a, b) => b.score - a.score);
+
+      finalScores.innerHTML = sorted.map((entry, index) =>
+        `${index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'} Player ${entry.player}: ${entry.score}`
+      ).join('<br>');
+      gameOverScreen.style.display = 'flex';
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      updateHUD();
+
+      if (!gameState.running) {
+        showGameOver();
+        return;
+      }
+      rafId = requestAnimationFrame(gameLoop);
+    }
+
+    // Touch event handlers
+    document.querySelectorAll('.arrow').forEach(arrow => {
+      arrow.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const playerId = Number(arrow.dataset.player);
+        const dir = arrow.dataset.dir;
+        touchInputs[playerId][dir] = true;
+      });
+      arrow.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        const playerId = Number(arrow.dataset.player);
+        const dir = arrow.dataset.dir;
+        touchInputs[playerId][dir] = false;
+      });
+    });
+
+    document.querySelectorAll('.shoot-btn').forEach(btn => {
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const playerId = Number(btn.dataset.player);
+        if (players[playerId]) players[playerId].shoot(bullets);
+      });
+    });
+
+    document.addEventListener('keydown', e => {
+      keys[e.key] = true;
+      if ((e.key === 'j' || e.key === 'J' || e.key === 'l' || e.key === 'L') &&
+          settings.playerCount >= 3 && !settings.touchscreenMode && gameState.running) {
+        players[2].shoot(bullets);
+      }
+    });
+
+    document.addEventListener('keyup', e => {
+      keys[e.key] = false;
+    });
+
+    document.addEventListener('mousemove', e => {
+      const rect = gameCanvas.getBoundingClientRect();
+      mouse.x = (e.clientX - rect.left) * (canvasWidth / rect.width);
+      mouse.y = (e.clientY - rect.top) * (canvasHeight / rect.height);
+    });
+
+    document.addEventListener('click', () => {
+      if (!gameState || !gameState.running || settings.touchscreenMode) return;
+      if (settings.playerCount >= 1) players[0].shoot(bullets);
+      if (settings.playerCount >= 2) players[1].shoot(bullets);
+    });
+
+    initSettings();
+  </script>
+</body>
+</html>
