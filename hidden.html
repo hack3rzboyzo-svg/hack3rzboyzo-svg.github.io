@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <title>Hidden Page</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lavishly+Yours&family=Mea+Culpa&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0a0f2c;
@@ -14,6 +16,7 @@
     --red: #ff2244;
     --text: #e0eaff;
     --green: #0c5b29;
+    --pink: #ff00bf;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -82,6 +85,20 @@
     color:rgb(28, 157, 26);
     border: 1px solid rgb(28, 157, 26);
     white-space: nowrap;
+  }
+  .badge-guard{
+    color: var(--green);
+    border-color: rgb(4, 54, 22);
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    background: rgb(125,211,252,0.15);
+    color:rgb(232, 31, 31);
+    border: 1px solid rgb(232, 31, 31);
+    white-space: nowrap;
+
   }
 
   /* ── MEMBERS SECTION ── */
@@ -192,24 +209,134 @@
     display: block;
     margin: 0 auto 14px;
   }
+  .meet-card.girly {
+    background: rgba(255,0,191,0.08);
+    border: 1px solid rgba(255,0,191,0.35);
+    border-radius: 22px;
+    width: 260px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    backdrop-filter: blur(6px);
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+  }
+  .meet-card.girly::before {
+    content: '✨';
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-size: 1.8rem;
+    opacity: 0.18;
+  }
+  .meet-card.girly:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(255,0,191,0.25);
+  }
+  .meet-card.girly img {
+    width: 160px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 18px;
+    border: 2px solid rgba(255,0,191,0.5);
+    display: block;
+    margin: 16px auto;
+    box-shadow: 0 0 18px rgba(255,0,191,0.15);
+  }
+  .meet-card.girly .meet-name {
+    font-family: 'Lavishly Yours', cursive;
+    font-size: 0.95rem;
+    color: #ff8cf0;
+    letter-spacing:6px;
+    display: block;
+  }
+  .meet-card.girly .meet-role {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: #ff00bf;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .meet-card.girly p {
+    margin: 0;
+    line-height: 1.4;
+    color: rgb(255, 0, 191);
+  }
   .meet-name {
     font-family: 'Cinzel Decorative', serif;
     font-size: 0.8rem;
     color: var(--accent);
     letter-spacing: 2px;
-    margin-bottom: 6px;
+    margin-bottom: 3px;
   }
   .meet-role {
     font-size: 0.65rem;
     letter-spacing: 2px;
     color: #93c5fd;
     text-transform: uppercase;
+    margin-bottom: 3px;
   }
   .Type{
-     font-size: 0.65rem;
+     font-size: 0.5rem;
     letter-spacing: 2px;
-    color: #93c5fd;
+    color: #00f2ff;
     text-transform: uppercase;
+  }
+  .girly-subtitle {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: #ff00bf;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+  }
+  .girly-type{
+    font-size: 0.5rem;
+    letter-spacing: 1px;
+    color: #ff00bf;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .girly{
+    font-family: 'orbitron', serif;
+    font-weight: 400;
+    padding: 2px 8px;
+    font-style: normal;
+    letter-spacing: 2px;
+    border-color: rgb(4, 54, 22);
+    font-size: 0.6rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    background: rgb(125,211,252,0.15);
+    color:rgb(255, 0, 191);
+    border: 1px solid rgb(225, 0, 191);
+    white-space: nowrap;
+  }
+  .girly-heading{
+    font-family: 'Cinzel Decorative', static;
+    font-weight: 300;
+    font-style: static;
+    letter-spacing: 2px;
+    margin-bottom: 3px;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    color:rgb(255, 0, 191);
+    white-space: nowrap;
+  }
+  .girly-meet-empty {
+    background: rgba(255,0,191,0.03);
+    border: 1px dashed rgba(255, 0, 191, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    width: 240px;
+    height: 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: rgba(255,0,191,0.25);
+    margin-top: 50px;
   }
   .meet-empty {
     background: rgba(125,211,252,0.03);
@@ -508,68 +635,75 @@
     <ul class="members-list">
       <li>👑 Mikail <span class="badge king">King</span></li>
       <li>🌙 Qusai <span class="badge-founder">Founder</span></li>
-      <li>🌙 Mustafa <span class="badge">King Guard</span></li>
+      <li>🌙 Mustafa <span class="badge-guard">King's Guard</span></li>
       <li>🌙 Jibrail <span class="badge">Member</span></li>
       <li>🌙 Arafat <span class="badge">Member</span></li>
       <li>🌙 Amir <span class="badge">Member</span></li>
       <li>🌙 Azrail <span class="badge">Member</span></li>
       <li>🌙 Abdurahman <span class="badge">Member</span></li>
       <li>🌙 Ghaddi <span class="badge">Member</span></li>
-      <li>🌙 Isra <span class="badge">Member</span></li>
-      <li>🌙 Zubaida <span class="badge">Member</span></li>
-      <li>🌙 Sahar <span class="badge">Member</span></li>
+      <li>🌙 Isra</span> <span class="girly">Member</span></li>
+      <li>🌙 Zubaida <span class="girly">Member</span></li>
+      <li>🌙 Sahar <span class="girly">Member</span></li>
     </ul>
   </div>
 
-  <!-- BLUE DIVIDER -->
-  <div class="divider" style="--red: #7dd3fc;"><span style="color:#7dd3fc">✦</span></div>
+<!-- PINK DIVIDER -->
+  <div class="divider" style="--pink: #ff00bf;"><span style="color:#ff00bf">✦</span></div>
+    <h2 class="girly-heading" style="color: var(--pink); text-shadow: 0 0 20px rgba(255,0,191,0.5);">The Lunar Juniors</h2>
+  <p class="girly-subtitle" style="color: #ff00bf; border-color: rgb(225, 0, 191);">The Future of the Gooners</p>
+  <p class="girly-type" style="color: #ff00bf; border-color: rgb(225, 0, 191);">These few hand-selected, battle tested,
+     and "snitch-proofed" Youths have earned the title as,
+      Lunar Juniors,
+      a division of the Lunar Gooners, that will take over,
+     once the mantle is passed down.</p>
+  <div class="girly-meet-empty">
+       <span>＋</span>
+        <p>Coming Soon</p>
+  </div>
 
-  <!-- MEET THE TEAM -->
+  <!-- BLUE DIVIDER --!>
+  <div class="divider" style="--red: #7dd3fc;"><span style="color:#7dd3fc">✦</span></div>
+<!-- MEET THE TEAM -->
   <div class="meet-section">
     <h2 class="meet-title">MEET THE TEAM</h2>
-    <p class="meet-subtitle">The Lunar Sooners · Up Close</p>
+    <p class="meet-subtitle">The Lunar Gooners · Up Close</p>
     <div class="meet-grid">
-
-      <div class="meet-card">
-        <img src="./Pics/25802.jpg" alt="Sleeping Beauty">
-        <p class="meet-name">The Sleeper</p>
-        <p class="meet-role">Resting in power</p>
-      </div>
-
-      <div class="meet-card">
-        <img src="./Pics/26382.jpg" alt="The Squad">
-        <p class="meet-name">The Squad</p>
-        <p class="meet-role">All of us, together</p>
-      </div>
-      <div class="meet-card">
-        <img src="./Pics/26352.jpg" alt="The Squad">
-        <p class="meet-name">The Girls</p>
-        <p class="meet-role">Lunar Juniors</p>
-      </div>
-      <div class="meet-card">
-        <img src="./Pics/26370.jpg" alt="The Squad">
-        <p class="meet-name">The Squad</p>
-        <p class="meet-role">All of us, together</p>
-      </div>
       <div class="meet-card">
         <img src="./Pics/25947.jpg" alt="The Squad">
         <p class="meet-name">The Boys</p>
         <p class="meet-role">Male Gooners</p>
+        <p class="Type">Mixed</p>
       </div>
       <div class="meet-card">
-        <img src="./Pics/Photo on 03-04-2026 at 3.44 PM.jpg" alt="The Squad">
+        <img src="./Pics/26382.jpg" alt="The Squad">
+        <p class="meet-name">The Squad</p>
+        <p class="meet-role">All of us, together</p>
+        <p class="Type">Mixed</p>
+      </div>
+      <div class="meet-card">
+        <img src="./Pics/abdu.jpeg" alt="Abdu">
         <p class="meet-name">Abdu</p>
-        <p class="meet-role">OG(Original Gooner)</p>
+        <p class="meet-role">OG (Original Gooner)</p>
+        <p class="Type">Senior Gooner</p>
       </div>
       <div class="meet-card">
-        <img src="./Pics/Photo on 03-04-2026 at 3.45 PM.jpg" alt="The Squad">
+        <img src="./Pics/aj.jpeg" alt="Azrail">
         <p class="meet-name">A+J</p>
-        <p class="meet-role">The Screamer</p>
+        <p class="meet-role">Intern</p>
+        <p class="Type">Senior Gooner</p>
       </div>
       <div class="meet-card">
-        <img src="./Pics/Photo on 03-04-2026 at 3.42 PM.jpg" alt="The Squad">
+        <img src="./Pics/jj.jpeg" alt="JJ">
         <p class="meet-name">Double J</p>
         <p class="meet-role">Older Brother</p>
+        <p class="Type">Senior Gooner</p>
+      </div>
+      <div class="meet-card girly">
+        <img src="./Pics/26352.jpg" alt="Sassy">
+        <p class="meet-name">The Girls</p>
+        <p class="meet-role">Lunar Juniors</p>
+        <p class="girly-type">Juniors</p>
       </div>
       <div class="meet-empty">
         <span>＋</span>
@@ -723,6 +857,11 @@
 
     renderLog();
   </script>
+
+  <div style="margin-top: 60px; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+    <a href="./movs.html" style="display: inline-block; padding: 12px 24px; background: rgba(255,215,0,0.12); border: 1px solid rgba(255,215,0,0.35); color: var(--gold); text-decoration: none; border-radius: 8px; font-size: 0.85rem; letter-spacing: 2px; transition: background 0.2s;">🎬 Exclusive Content</a>
+    <a href="./index.html" style="display: inline-block; padding: 12px 24px; background: rgba(125,211,252,0.12); border: 1px solid rgba(125,211,252,0.4); color: var(--accent); text-decoration: none; border-radius: 8px; font-size: 0.85rem; letter-spacing: 2px; transition: background 0.2s;">🏠 Back to Index</a>
+  </div>
 
   <footer>☽ Lunar Sooners · Eyes Open · Always ☾</footer>
 
