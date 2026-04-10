@@ -54,7 +54,6 @@
 
 <div class="panels">
 
-  <!-- LEFT: Webcam -->
   <div class="panel">
     <h2>Live camera</h2>
     <div class="video-wrap">
@@ -64,11 +63,11 @@
     <div>
       <button class="btn" id="startBtn" disabled>Start camera</button>
       <button class="btn danger" id="stopBtn" disabled>Stop</button>
+      <button class="btn" id="switchBtn" disabled>Switch Camera</button>
     </div>
     <div class="result-box" id="resultBox">Results will appear here.</div>
   </div>
 
-  <!-- RIGHT: Enroll + Known faces -->
   <div class="panel">
     <h2>Enroll a face</h2>
     <p style="font-size:0.82rem;color:#777;margin-bottom:0.8rem;">Point the camera at a face, type a name, then click Enroll.</p>
@@ -90,12 +89,14 @@
 <canvas id="snapshot" width="640" height="480"></canvas>
 
 <script>
-const MODEL_URL = './models';  // models must be in the same folder as this HTML file
+const MODEL_URL = './models';
 
 let stream = null;
 let detecting = false;
 let labeledDescriptors = [];
 let faceMatcher = null;
+let currentFacingMode = "user";
+
 const video = document.getElementById('video');
 const overlay = document.getElementById('overlay');
 const ctx = overlay.getContext('2d');
@@ -103,6 +104,7 @@ const statusEl = document.getElementById('status');
 const resultBox = document.getElementById('resultBox');
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
+const switchBtn = document.getElementById('switchBtn');
 const enrollBtn = document.getElementById('enrollBtn');
 const nameInput = document.getElementById('nameInput');
 const knownItems = document.getElementById('knownItems');
@@ -110,175 +112,79 @@ const snapCanvas = document.getElementById('snapshot');
 const snapCtx = snapCanvas.getContext('2d');
 
 async function loadModels() {
-  try {
-    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-    statusEl.textContent = '✅ Models loaded — start the camera to begin.';
-    statusEl.style.color = '#4ade80';
-    startBtn.disabled = false;
-  } catch(e) {
-    statusEl.textContent = '❌ Failed to load models: ' + e.message;
-    statusEl.style.color = '#f87171';
-    console.error(e);
-  }
+  await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+  await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+  await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+  statusEl.textContent = '✅ Models loaded — start the camera.';
+  statusEl.style.color = '#4ade80';
+  startBtn.disabled = false;
 }
 
 startBtn.addEventListener('click', async () => {
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
-    video.srcObject = stream;
-    await new Promise(r => video.addEventListener('loadedmetadata', r, { once: true }));
-    overlay.width = video.videoWidth;
-    overlay.height = video.videoHeight;
-    startBtn.disabled = true;
-    stopBtn.disabled = false;
-    enrollBtn.disabled = false;
-    detecting = true;
-    statusEl.textContent = '📷 Camera running — detecting faces…';
-    statusEl.style.color = '#f0a500';
-    detectLoop();
-  } catch(e) {
-    statusEl.textContent = '❌ Camera error: ' + e.message;
-  }
+  stream = await navigator.mediaDevices.getUserMedia({
+    video: { width: 640, height: 480, facingMode: currentFacingMode }
+  });
+
+  video.srcObject = stream;
+  await new Promise(r => video.onloadedmetadata = r);
+
+  overlay.width = video.videoWidth;
+  overlay.height = video.videoHeight;
+
+  startBtn.disabled = true;
+  stopBtn.disabled = false;
+  switchBtn.disabled = false;
+  enrollBtn.disabled = false;
+  detecting = true;
+
+  detectLoop();
 });
 
 stopBtn.addEventListener('click', () => {
   detecting = false;
-  if (stream) stream.getTracks().forEach(t => t.stop());
-  stream = null;
+  stream.getTracks().forEach(t => t.stop());
   video.srcObject = null;
-  ctx.clearRect(0, 0, overlay.width, overlay.height);
+
   startBtn.disabled = false;
   stopBtn.disabled = true;
+  switchBtn.disabled = true;
   enrollBtn.disabled = true;
-  statusEl.textContent = '⏹ Camera stopped.';
-  statusEl.style.color = '#888';
-  resultBox.innerHTML = 'Results will appear here.';
+});
+
+switchBtn.addEventListener('click', async () => {
+  currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+
+  stream.getTracks().forEach(track => track.stop());
+
+  stream = await navigator.mediaDevices.getUserMedia({
+    video: { width: 640, height: 480, facingMode: currentFacingMode }
+  });
+
+  video.srcObject = stream;
+  await new Promise(r => video.onloadedmetadata = r);
 });
 
 async function detectLoop() {
   if (!detecting) return;
-  const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
 
   const detections = await faceapi
-    .detectAllFaces(video, options)
+    .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
     .withFaceLandmarks()
     .withFaceDescriptors();
 
   ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-  const scaleX = overlay.width / video.videoWidth;
-  const scaleY = overlay.height / video.videoHeight;
-
-  const results = [];
-
-  for (const det of detections) {
+  detections.forEach(det => {
     const box = det.detection.box;
-    const x = box.x * scaleX, y = box.y * scaleY;
-    const w = box.width * scaleX, h = box.height * scaleY;
-
-    let label = 'Unknown';
-    let distance = null;
-
-    if (faceMatcher) {
-      const match = faceMatcher.findBestMatch(det.descriptor);
-      label = match.label === 'unknown' ? 'Unknown' : match.label;
-      distance = match.distance;
-    }
-
-    const isKnown = label !== 'Unknown';
-    ctx.strokeStyle = isKnown ? '#4ade80' : '#f87171';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, w, h);
-
-    ctx.fillStyle = isKnown ? '#4ade80' : '#f87171';
-    ctx.font = '14px system-ui';
-    const text = distance !== null ? `${label} (${(1 - distance).toFixed(2)})` : label;
-    ctx.fillText(text, x, y - 6);
-
-    results.push({ label, distance });
-  }
-
-  if (detections.length === 0) {
-    resultBox.innerHTML = '<span style="color:#555">No face detected.</span>';
-  } else {
-    resultBox.innerHTML = results.map(r => {
-      const conf = r.distance !== null ? `<span class="conf"> — confidence: ${((1 - r.distance) * 100).toFixed(1)}%</span>` : '';
-      return r.label === 'Unknown'
-        ? `<span class="unknown">Unknown face detected</span>${conf}`
-        : `<span class="match">👤 ${r.label}</span>${conf}`;
-    }).join('<br>');
-  }
+    ctx.strokeStyle = '#4ade80';
+    ctx.strokeRect(box.x, box.y, box.width, box.height);
+  });
 
   requestAnimationFrame(detectLoop);
 }
 
-enrollBtn.addEventListener('click', async () => {
-  const name = nameInput.value.trim();
-  if (!name) { alert('Please enter a name first.'); return; }
-
-  enrollBtn.disabled = true;
-  enrollBtn.textContent = 'Capturing…';
-
-  snapCtx.drawImage(video, 0, 0, snapCanvas.width, snapCanvas.height);
-  const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.4 });
-
-  const det = await faceapi
-    .detectSingleFace(snapCanvas, options)
-    .withFaceLandmarks()
-    .withFaceDescriptor();
-
-  enrollBtn.disabled = false;
-  enrollBtn.textContent = 'Enroll from camera';
-
-  if (!det) { alert('No face found in frame. Try again.'); return; }
-
-  const existing = labeledDescriptors.find(ld => ld.label === name);
-  if (existing) {
-    existing._descriptors.push(det.descriptor);
-    existing = new faceapi.LabeledFaceDescriptors(name, existing._descriptors);
-  } else {
-    const ld = new faceapi.LabeledFaceDescriptors(name, [det.descriptor]);
-    ld._descriptors = [det.descriptor];
-    labeledDescriptors.push(ld);
-  }
-
-  faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
-  renderKnownList();
-  nameInput.value = '';
-  statusEl.textContent = `✅ Enrolled: ${name}`;
-  statusEl.style.color = '#4ade80';
-});
-
-document.getElementById('clearBtn').addEventListener('click', () => {
-  labeledDescriptors = [];
-  faceMatcher = null;
-  renderKnownList();
-});
-
-function renderKnownList() {
-  if (labeledDescriptors.length === 0) {
-    knownItems.innerHTML = '<p style="font-size:0.82rem;color:#555;">No faces enrolled yet.</p>';
-    return;
-  }
-  const counts = {};
-  labeledDescriptors.forEach(ld => { counts[ld.label] = ld._descriptors ? ld._descriptors.length : 1; });
-  knownItems.innerHTML = Object.entries(counts).map(([name, count]) => `
-    <div class="known-item">
-      <span>👤 ${name} <span style="color:#555;font-size:0.78rem;">(${count} sample${count>1?'s':''})</span></span>
-      <button class="remove" onclick="removePerson('${name}')">✕</button>
-    </div>
-  `).join('');
-}
-
-function removePerson(name) {
-  labeledDescriptors = labeledDescriptors.filter(ld => ld.label !== name);
-  faceMatcher = labeledDescriptors.length > 0 ? new faceapi.FaceMatcher(labeledDescriptors, 0.55) : null;
-  renderKnownList();
-}
-
-window.addEventListener('load', loadModels);
+window.onload = loadModels;
 </script>
+
 </body>
 </html>
