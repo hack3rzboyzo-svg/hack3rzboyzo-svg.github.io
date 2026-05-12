@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Scripts</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:     #0a0f2c;
+    --bg2:    #0d1540;
+    --accent: #7dd3fc;
+    --gold:   #ffd700;
+    --red:    #ff2244;
+    --text:   #e0eaff;
+    --green:  #4ade80;
+    --purple: #c084fc;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse at 20% 30%, rgba(0,40,120,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 70%, rgba(0,20,80,0.3) 0%, transparent 60%);
+    color: var(--text);
+    font-family: 'Orbitron', sans-serif;
+    padding: 40px 20px;
+    text-align: center;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header-section {
+    margin-bottom: 60px;
+    animation: fadeDown 0.8s ease both;
+  }
+  .header-section h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(125,211,252,0.6);
+  }
+  .header-section p {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    letter-spacing: 4px;
+    color: #bae6fd;
+    text-transform: uppercase;
+  }
+
+  /* ── SECTION ── */
+  .scripts-section {
+    animation: fadeDown 0.8s 0.35s ease both;
+    margin-bottom: 70px;
+  }
+  .section-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(125,211,252,0.5);
+    letter-spacing: 4px;
+    margin-bottom: 6px;
+  }
+  .section-subtitle {
+    font-size: 0.7rem;
+    letter-spacing: 5px;
+    color: #7dd3fc;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+  }
+
+  /* ── GRID ── */
+  .scripts-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 28px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  /* ── CARD ── */
+  .script-card {
+    background: rgba(125,211,252,0.05);
+    border: 1px solid rgba(125,211,252,0.2);
+    border-radius: 12px;
+    padding: 24px 20px 20px;
+    width: 280px;
+    text-align: left;
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .script-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(125,211,252,0.15);
+  }
+
+  /* colour tints per category */
+  .script-card.games  { border-color: rgba(74,222,128,0.3); }
+  .script-card.games:hover  { box-shadow: 0 8px 30px rgba(74,222,128,0.15); }
+  .script-card.tools  { border-color: rgba(255,215,0,0.3); }
+  .script-card.tools:hover  { box-shadow: 0 8px 30px rgba(255,215,0,0.15); }
+  .script-card.web    { border-color: rgba(192,132,252,0.35); }
+  .script-card.web:hover    { box-shadow: 0 8px 30px rgba(192,132,252,0.2); }
+  .script-card.misc   { border-color: rgba(125,211,252,0.25); }
+
+  /* icon badge */
+  .card-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+
+  /* tag pill */
+  .card-tag {
+    display: inline-block;
+    font-size: 0.55rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    align-self: flex-start;
+  }
+  .tag-game   { background: rgba(74,222,128,0.12);  color: var(--green);  border: 1px solid rgba(74,222,128,0.3); }
+  .tag-tool   { background: rgba(255,215,0,0.1);    color: var(--gold);   border: 1px solid rgba(255,215,0,0.3); }
+  .tag-web    { background: rgba(192,132,252,0.1);  color: var(--purple); border: 1px solid rgba(192,132,252,0.3); }
+  .tag-misc   { background: rgba(125,211,252,0.08); color: var(--accent); border: 1px solid rgba(125,211,252,0.25); }
+
+  .card-filename {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 0.8rem;
+    color: var(--accent);
+    letter-spacing: 1.5px;
+    word-break: break-all;
+  }
+  .script-card.games .card-filename  { color: var(--green); }
+  .script-card.tools .card-filename  { color: var(--gold); }
+  .script-card.web   .card-filename  { color: var(--purple); }
+
+  .card-desc {
+    font-size: 0.68rem;
+    letter-spacing: 0.8px;
+    color: #94a3b8;
+    line-height: 1.7;
+    flex: 1;
+  }
+
+  /* feature pills */
+  .card-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .feat {
+    font-size: 0.52rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #64748b;
+  }
+
+  /* download button */
+  .btn-dl {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 10px 18px;
+    background: rgba(255,215,0,0.10);
+    border: 1px solid rgba(255,215,0,0.35);
+    color: var(--gold);
+    text-decoration: none;
+    border-radius: 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: background 0.2s, box-shadow 0.2s;
+    text-align: center;
+  }
+  .btn-dl:hover {
+    background: rgba(255,215,0,0.2);
+    box-shadow: 0 0 16px rgba(255,215,0,0.15);
+  }
+  .script-card.games .btn-dl {
+    background: rgba(74,222,128,0.08);
+    border-color: rgba(74,222,128,0.3);
+    color: var(--green);
+  }
+  .script-card.games .btn-dl:hover {
+    background: rgba(74,222,128,0.18);
+    box-shadow: 0 0 16px rgba(74,222,128,0.15);
+  }
+  .script-card.web .btn-dl {
+    background: rgba(192,132,252,0.08);
+    border-color: rgba(192,132,252,0.3);
+    color: var(--purple);
+  }
+  .script-card.web .btn-dl:hover {
+    background: rgba(192,132,252,0.16);
+    box-shadow: 0 0 16px rgba(192,132,252,0.15);
+  }
+
+  /* ── HOW TO RUN ── */
+  .howto {
+    margin-top: 16px;
+    border-top: 1px solid rgba(255,215,0,0.15);
+    padding-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .howto-toggle {
+    background: none;
+    border: 1px solid rgba(255,215,0,0.3);
+    color: var(--gold);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 7px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: background 0.2s;
+  }
+  .howto-toggle:hover { background: rgba(255,215,0,0.1); }
+  .howto-body {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .howto-body.open { display: flex; }
+  .howto-step {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .step-num {
+    background: rgba(255,215,0,0.12);
+    border: 1px solid rgba(255,215,0,0.3);
+    color: var(--gold);
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-content {
+    flex: 1;
+  }
+  .step-label {
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  .step-code {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,215,0,0.15);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.65rem;
+    color: #e2e8f0;
+    letter-spacing: 0.5px;
+    word-break: break-all;
+    line-height: 1.6;
+  }
+  .step-note {
+    font-size: 0.6rem;
+    color: #64748b;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+  .howto-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.58rem;
+    letter-spacing: 0.5px;
+  }
+  .howto-table th {
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 5px 8px;
+    border-bottom: 1px solid rgba(255,215,0,0.2);
+  }
+  .howto-table td {
+    padding: 5px 8px;
+    color: #94a3b8;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  .howto-table td:first-child { color: #e2e8f0; font-family: 'Courier New', monospace; }
+
+  /* ── FOOTER ── */
+  footer {
+    margin-top: 60px;
+    font-size: 0.6rem;
+    letter-spacing: 4px;
+    color: rgba(192,132,252,0.3);
+    text-transform: uppercase;
+    animation: fadeDown 0.8s 0.6s ease both;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    .scripts-grid { gap: 18px; }
+    .script-card  { width: 100%; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header-section">
+  <h1>Script Archive</h1>
+  <p>Python projects · browse &amp; download</p>
+</div>
+
+<div class="scripts-section">
+  <h2 class="section-title">All Scripts</h2>
+  <p class="section-subtitle">Source code · ready to run</p>
+
+  <div class="scripts-grid">
+
+    <!-- snake.py -->
+    <div class="script-card games">
+      <div class="card-icon">🐍</div>
+      <span class="card-tag tag-game">Game</span>
+      <div class="card-filename">snake.py</div>
+      <div class="card-desc">
+        Classic Snake built with Pygame. Navigate the snake to eat red apples and grow longer without hitting the walls or yourself. Flashes a "YOU LOSE" screen on death before auto-restarting.
+      </div>
+      <div class="card-features">
+        <span class="feat">Pygame</span>
+        <span class="feat">Arrow keys</span>
+        <span class="feat">Auto-restart</span>
+      </div>
+      <a class="btn-dl" href="./snake.py" download>⬇ Download</a>
+    </div>
+
+    <!-- snakegold.py -->
+    <div class="script-card games">
+      <div class="card-icon">✨</div>
+      <span class="card-tag tag-game">Game</span>
+      <div class="card-filename">snakegold.py</div>
+      <div class="card-desc">
+        Enhanced Snake with a roaming golden apple that grants a 10-second power mode. While powered-up, every checkerboard-pattern cell counts as food — chaos ensues.
+      </div>
+      <div class="card-features">
+        <span class="feat">Pygame</span>
+        <span class="feat">Power mode</span>
+        <span class="feat">Golden apple</span>
+        <span class="feat">Checkerboard</span>
+      </div>
+      <a class="btn-dl" href="./snakegold.py" download>⬇ Download</a>
+    </div>
+
+    <!-- snakeop.py -->
+    <div class="script-card games">
+      <div class="card-icon">🏆</div>
+      <span class="card-tag tag-game">Game</span>
+      <div class="card-filename">snakeop.py</div>
+      <div class="card-desc">
+        The ultimate Snake experience. Features a full lobby menu with 4 modes: Normal, Maze Easy, Maze Hard, and Maze Impossible. Multiple simultaneous apples, a moving golden apple, and wall collision detection.
+      </div>
+      <div class="card-features">
+        <span class="feat">Pygame</span>
+        <span class="feat">Maze modes</span>
+        <span class="feat">Menu system</span>
+        <span class="feat">Multi-apple</span>
+      </div>
+      <a class="btn-dl" href="./snakeop.py" download>⬇ Download</a>
+    </div>
+
+    <!-- imageditor.py -->
+    <div class="script-card tools">
+      <div class="card-icon">🖼️</div>
+      <span class="card-tag tag-tool">Tool</span>
+      <div class="card-filename">imageditor.py</div>
+      <div class="card-desc">
+        Dataset Image Augmentor — generates hundreds of augmented training images from a single source. Applies random combinations of 17 augmentations including blur, noise, perspective warp, sepia, and more.
+      </div>
+      <div class="card-features">
+        <span class="feat">Pillow</span>
+        <span class="feat">NumPy</span>
+        <span class="feat">17 augmentations</span>
+        <span class="feat">CLI args</span>
+        <span class="feat">JPEG / PNG / WEBP</span>
+      </div>
+
+      <div class="howto">
+        <button class="howto-toggle" onclick="this.nextElementSibling.classList.toggle('open'); this.textContent = this.nextElementSibling.classList.contains('open') ? '▲ Hide guide' : '▼ How to run'">▼ How to run</button>
+        <div class="howto-body">
+
+          <div class="howto-step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-label">Install dependencies</div>
+              <div class="step-code">pip install Pillow numpy</div>
+            </div>
+          </div>
+
+          <div class="howto-step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-label">Navigate to the script folder</div>
+              <div class="step-code">cd C:\Users\YourName\Downloads</div>
+              <div class="step-note">Replace with wherever you saved the file.</div>
+            </div>
+          </div>
+
+          <div class="howto-step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-label">Basic run — just point at an image</div>
+              <div class="step-code">python imageditor.py --input photo.jpg</div>
+              <div class="step-note">Generates 300 images into ./augmented_dataset by default. The image must be in the same folder as the script, or use a full path.</div>
+            </div>
+          </div>
+
+          <div class="howto-step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-label">Full command with all options</div>
+              <div class="step-code">python imageditor.py --input photo.jpg --output ./my_dataset --count 500 --format JPEG --quality 90</div>
+            </div>
+          </div>
+
+          <div class="howto-step">
+            <div class="step-num">5</div>
+            <div class="step-content">
+              <div class="step-label">All available flags</div>
+              <table class="howto-table">
+                <tr><th>Flag</th><th>What it does</th><th>Default</th></tr>
+                <tr><td>--input</td><td>Source image (required)</td><td>—</td></tr>
+                <tr><td>--output</td><td>Output folder</td><td>./augmented_dataset</td></tr>
+                <tr><td>--count</td><td>Images to generate</td><td>300</td></tr>
+                <tr><td>--min-augs</td><td>Min effects per image</td><td>1</td></tr>
+                <tr><td>--max-augs</td><td>Max effects per image</td><td>4</td></tr>
+                <tr><td>--format</td><td>JPEG / PNG / WEBP</td><td>JPEG</td></tr>
+                <tr><td>--quality</td><td>JPEG quality 1–95</td><td>90</td></tr>
+                <tr><td>--seed</td><td>Fix randomness</td><td>random</td></tr>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <a class="btn-dl" href="./imageditor.py" download>⬇ Download</a>
+    </div>
+
+    <!-- server.py -->
+    <div class="script-card web">
+      <div class="card-icon">🌐</div>
+      <span class="card-tag tag-web">Server</span>
+      <div class="card-filename">server.py</div>
+      <div class="card-desc">
+        Lightweight local HTTP server built on Python's standard library. Handles suggestion submissions, password-protected log clearing, and share requests — all persisted to text files. Serves static files alongside the API.
+      </div>
+      <div class="card-features">
+        <span class="feat">http.server</span>
+        <span class="feat">REST endpoints</span>
+        <span class="feat">CORS headers</span>
+        <span class="feat">No dependencies</span>
+      </div>
+      <a class="btn-dl" href="./server.py" download>⬇ Download</a>
+    </div>
+
+    <!-- just4fun.py -->
+    <div class="script-card misc">
+      <div class="card-icon">🔬</div>
+      <span class="card-tag tag-misc">Misc</span>
+      <div class="card-filename">just4fun.py</div>
+      <div class="card-desc">
+        A minimal two-liner that imports PyBullet (a physics simulation engine) and prints its connection info. Useful as a quick sanity-check to confirm PyBullet is installed and accessible in your environment.
+      </div>
+      <div class="card-features">
+        <span class="feat">PyBullet</span>
+        <span class="feat">Env check</span>
+      </div>
+      <a class="btn-dl" href="./just4fun.py" download>⬇ Download</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>☽ Script Archive · Built with Python · Always ☾</footer>
+
+</body>
+</html>
