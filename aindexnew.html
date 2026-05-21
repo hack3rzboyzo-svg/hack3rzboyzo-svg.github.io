@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Face Recognition · Private Calls</title>
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+:root {
+  --bg:       #0a0a0c;
+  --surface:  #111115;
+  --surface2: #18181d;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.12);
+  --accent:   #3b82f6;
+  --accent2:  #06b6d4;
+  --green:    #22c55e;
+  --red:      #ef4444;
+  --orange:   #f59e0b;
+  --muted:    #52525b;
+  --muted2:   #71717a;
+  --text:     #e4e4e7;
+  --text2:    #a1a1aa;
+  --radius:   12px;
+  --ease:     cubic-bezier(0.4,0,0.2,1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── FULLSCREEN CALL OVERLAY ── */
+#call-fullscreen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  flex-direction: column;
+}
+#call-fullscreen.active { display: flex; }
+
+#fc-remote-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+#fc-local-pip {
+  position: absolute;
+  bottom: 90px;
+  right: 1.5rem;
+  width: 200px;
+  aspect-ratio: 16/9;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  background: #111;
+  z-index: 2;
+  cursor: move;
+  user-select: none;
+}
+#fc-local-pip video { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 500px) { #fc-local-pip { width: 120px; bottom: 100px; } }
+
+#fc-remote-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: var(--muted2);
+  font-size: 0.9rem;
+  background: #050507;
+  z-index: 1;
+  transition: opacity 0.4s;
+}
+#fc-remote-placeholder .big-icon { font-size: 4rem; opacity: 0.2; }
+#fc-remote-placeholder.hidden { opacity: 0; pointer-events: none; }
+
+#fc-hud-top {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+  z-index: 3;
+  gap: 0.75rem;
+}
+.room-badge {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 0.35rem 0.75rem;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  cursor: pointer;
+  user-select: all;
+  transition: background 0.15s;
+}
+.room-badge:hover { background: rgba(59,130,246,0.18); }
+.copy-hint { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
+
+#fc-status-hud {
+  font-size: 0.82rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  flex: 1;
+  text-align: center;
+}
+#fc-status-hud.connected { color: #86efac; border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.08); }
+#fc-status-hud.error { color: #fca5a5; border-color: rgba(239,68,68,0.3); }
+
+#fc-quality {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+#fc-quality.good { background: var(--green); box-shadow: 0 0 8px var(--green); }
+#fc-quality.poor { background: var(--orange); }
+#fc-quality.bad  { background: var(--red); }
+
+#fc-controls-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  z-index: 3;
+}
+.fc-ctrl-btn {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: transform 0.15s var(--ease), background 0.15s;
+  flex-shrink: 0;
+}
+.fc-ctrl-btn:active { transform: scale(0.9); }
+.fc-ctrl-btn.mute        { background: rgba(255,255,255,0.12); color: #fff; }
+.fc-ctrl-btn.mute.on     { background: var(--red); }
+.fc-ctrl-btn.vidoff      { background: rgba(255,255,255,0.12); color: #fff; }
+.fc-ctrl-btn.vidoff.on   { background: var(--red); }
+.fc-ctrl-btn.hangup      { background: var(--red); color: #fff; width: 64px; height: 64px; font-size: 1.4rem; }
+.fc-ctrl-btn.hangup:hover { background: #dc2626; }
+/* Exit fullscreen (back to page without leaving call) */
+.fc-ctrl-btn.exitfs {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text2);
+  font-size: 1rem;
+}
+.fc-ctrl-btn.exitfs:hover { background: rgba(255,255,255,0.13); }
+
+/* ── MAIN PAGE ── */
+.page-header {
+  padding: 2rem 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.page-header .logo {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.page-header h1 { font-size: 1.1rem; font-weight: 600; }
+.page-header p  { font-size: 0.78rem; color: var(--muted2); margin-top: 0.1rem; }
+
+.page-body {
+  max-width: 1020px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ── CALL LAUNCH CARD ── */
+.call-launch-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+.call-launch-card > h2 {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 1.25rem;
+}
+.call-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+.call-action-btn {
+  flex: 1 1 190px;
+  padding: 0.9rem 1.1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.call-action-btn:hover:not(.disabled-look) { background: rgba(255,255,255,0.07); }
+.call-action-btn:active:not(.disabled-look) { transform: scale(0.97); }
+.call-action-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.call-action-btn.primary:hover:not(.disabled-look) { background: #2563eb; border-color: #2563eb; }
+.call-action-btn.disabled-look { opacity: 0.38; cursor: not-allowed; pointer-events: none; }
+.btn-icon { font-size: 1.15rem; flex-shrink: 0; }
+.btn-label { display: flex; flex-direction: column; gap: 0.1rem; }
+.btn-label small { font-size: 0.7rem; font-weight: 400; color: rgba(255,255,255,0.45); }
+
+.join-row {
+  display: flex;
+  gap: 0.5rem;
+  flex: 2 1 260px;
+  align-items: stretch;
+}
+.join-row input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  min-width: 0;
+}
+.join-row input:focus { border-color: var(--accent); background: rgba(59,130,246,0.07); }
+.join-row input::placeholder { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.04em; }
+
+#home-code-display {
+  display: none;
+  margin-top: 1rem;
+  padding: 0.9rem 1.1rem;
+  background: rgba(59,130,246,0.07);
+  border: 1px solid rgba(59,130,246,0.25);
+  border-radius: 10px;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+#home-code-display.visible { display: flex; }
+#home-code-pill {
+  font-family: 'Courier New', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  cursor: pointer;
+  user-select: all;
+  padding: 0.3rem 0.7rem;
+  border-radius: 8px;
+  background: rgba(59,130,246,0.12);
+  border: 1px solid rgba(59,130,246,0.3);
+  transition: background 0.15s;
+}
+#home-code-pill:hover { background: rgba(59,130,246,0.22); }
+.code-share-hint { font-size: 0.78rem; color: var(--muted2); }
+
+#home-call-status {
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
+  color: var(--muted2);
+  min-height: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+#home-call-status.connected { color: #86efac; }
+#home-call-status.error     { color: #fca5a5; }
+
+/* ── FACE RECOGNITION SECTION ── */
+.section-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 1rem;
+}
+.panels { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  flex: 1 1 400px;
+}
+.panel h2 {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 1rem;
+}
+.video-wrap { position: relative; display: inline-block; width: 100%; }
+video, #overlay { border-radius: 8px; display: block; width: 100%; }
+#overlay { position: absolute; top: 0; left: 0; pointer-events: none; }
+
+.btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1.2rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+  margin-top: 0.8rem;
+  margin-right: 0.4rem;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.btn:hover  { background: #2563eb; }
+.btn.danger { background: var(--red); }
+.btn.danger:hover { background: #dc2626; }
+.btn:disabled { background: #2a2a2e; color: var(--muted); cursor: not-allowed; }
+
+#status-bar {
+  font-size: 0.82rem;
+  color: var(--orange);
+  margin-bottom: 1rem;
+  min-height: 1.2em;
+  padding: 0.5rem 0.8rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+#enroll-section input {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 0.5rem 0.8rem;
+  font-size: 0.9rem;
+  width: 100%;
+  margin-bottom: 0.6rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+#enroll-section input:focus { border-color: var(--accent); }
+.known-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+}
+.known-item .remove { background: none; border: none; color: #f87171; cursor: pointer; font-size: 1rem; padding: 0 0.2rem; }
+.result-box {
+  margin-top: 0.8rem;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 0.8rem;
+  font-size: 0.85rem;
+  min-height: 3rem;
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+.result-box .match   { color: #4ade80; font-weight: 600; font-size: 0.95rem; }
+.result-box .unknown { color: #f87171; font-weight: 600; }
+.result-box .conf    { color: var(--muted2); font-size: 0.78rem; }
+.tip { font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; }
+#snapshot { display: none; }
+
+/* verified badge that appears on the call card */
+.verified-session-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #86efac;
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.25);
+  border-radius: 20px;
+  padding: 0.2rem 0.6rem;
+  margin-left: 0.5rem;
+}
+</style>
+</head>
+<body>
+
+<!-- SHARE CODE MODAL -->
+<div id="share-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#16161a;border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:2rem 2.5rem;max-width:400px;width:90%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.7);">
+    <div style="font-size:2.8rem;margin-bottom:0.75rem;">📋</div>
+    <h2 style="font-size:1.1rem;font-weight:600;color:#e4e4e7;margin-bottom:0.6rem;">Code Copied!</h2>
+    <p style="font-size:0.88rem;color:#a1a1aa;margin-bottom:1.75rem;">The code for your call has been copied to your clipboard — share it with your friends so they can join.</p>
+    <button id="modal-continue-btn" style="width:100%;padding:0.85rem;background:#3b82f6;color:#fff;border:none;border-radius:10px;font-size:0.95rem;font-weight:600;cursor:pointer;transition:background 0.15s;">Open Call →</button>
+  </div>
+</div>
+
+<!-- ════════════════ FULLSCREEN CALL ════════════════ -->
+<div id="call-fullscreen">
+  <video id="fc-remote-video" autoplay playsinline></video>
+
+  <div id="fc-remote-placeholder">
+    <span class="big-icon">👤</span>
+    <span>Waiting for peer to join…</span>
+  </div>
+
+  <div id="fc-hud-top">
+    <div style="display:flex;align-items:center;gap:0.5rem;">
+      <span id="fc-room-badge" class="room-badge" title="Click to copy">——</span>
+      <span class="copy-hint">tap to copy</span>
+    </div>
+    <div id="fc-status-hud">Initialising…</div>
+    <div id="fc-quality"></div>
+  </div>
+
+  <div id="fc-local-pip">
+    <video id="fc-local-video" autoplay muted playsinline></video>
+  </div>
+
+  <div id="fc-controls-bar">
+    <button class="fc-ctrl-btn exitfs" id="btn-exitfs"  title="Back to page (keeps call alive)">⊡</button>
+    <button class="fc-ctrl-btn mute"   id="btn-mute"    title="Mute">🎙️</button>
+    <button class="fc-ctrl-btn vidoff" id="btn-camoff"  title="Camera off">📷</button>
+    <button class="fc-ctrl-btn hangup" id="btn-hangup"  title="End call">📵</button>
+  </div>
+</div>
+
+<!-- ════════════════ MAIN PAGE ════════════════ -->
+<header class="page-header">
+  <div class="logo">👁️</div>
+  <div>
+    <h1>Face Recognition</h1>
+    <p>Powered by face-api.js · runs entirely in your browser</p>
+  </div>
+</header>
+
+<div class="page-body">
+
+  <div id="status-bar">⏳ Loading models…</div>
+
+  <!-- ── CALL CARD ── -->
+  <div class="call-launch-card">
+    <h2>🔒 Private Face Call
+      <span id="session-verified-badge" class="verified-session-badge" style="display:none;">
+        ✅ Verified this session
+      </span>
+    </h2>
+
+    <div class="call-actions">
+
+      <!-- Generate -->
+      <button class="call-action-btn primary disabled-look" id="home-create-btn">
+        <span class="btn-icon">📞</span>
+        <span class="btn-label">
+          Generate Call Code
+          <small>Start a new private call</small>
+        </span>
+      </button>
+
+      <!-- Join -->
+      <div class="join-row">
+        <input id="home-code-input" type="text" maxlength="6"
+          placeholder="Enter code · XXXXXX" autocomplete="off" spellcheck="false"/>
+        <button class="call-action-btn disabled-look" id="home-join-btn" style="flex:0 0 auto;">
+          <span class="btn-icon">🚀</span>
+          <span class="btn-label">Join</span>
+        </button>
+      </div>
+
+      <!-- Re-enter fullscreen (shown during active call) -->
+      <button class="call-action-btn" id="home-fullscreen-btn" style="display:none;flex:0 0 auto;">
+        <span class="btn-icon">⛶</span>
+        <span class="btn-label">
+          Open Call
+          <small>Re-enter fullscreen</small>
+        </span>
+      </button>
+
+      <!-- Leave (shown during active call) -->
+      <button class="call-action-btn" id="home-leave-btn"
+        style="display:none;flex:0 0 auto;background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#fca5a5;">
+        <span class="btn-icon">📵</span>
+        <span class="btn-label">
+          Leave Call
+          <small>End and disconnect</small>
+        </span>
+      </button>
+
+    </div>
+
+    <div id="home-code-display">
+      <span id="home-code-pill" title="Tap to copy"></span>
+      <span class="code-share-hint">📋 Tap the code to copy · share it so someone can join</span>
+    </div>
+
+    <div id="home-call-status">Verify your face below to enable calls.</div>
+  </div>
+
+  <!-- ── FACE RECOGNITION ── -->
+  <div>
+    <div class="section-label">Face Recognition</div>
+    <div class="panels">
+
+      <!-- Camera panel -->
+      <div class="panel">
+        <h2>Live Camera</h2>
+        <div class="video-wrap">
+          <video id="video" autoplay muted playsinline></video>
+          <canvas id="overlay"></canvas>
+        </div>
+        <div>
+          <button class="btn" id="startBtn" disabled>Start Camera</button>
+          <button class="btn danger" id="stopBtn" disabled>Stop</button>
+        </div>
+        <div class="result-box" id="resultBox">Results will appear here.</div>
+      </div>
+
+      <!-- Enroll panel (enroll button removed; name input kept for labelling) -->
+      <div class="panel">
+        <h2>Enroll a Face</h2>
+        <p style="font-size:0.82rem;color:var(--muted2);margin-bottom:0.8rem;">
+          Point the camera at a face, type a name, click Enroll once — calls stay unlocked for this session after the first match.
+        </p>
+        <div id="enroll-section">
+          <input type="text" id="nameInput" placeholder="Person's name (e.g. Alice)" maxlength="40"/>
+          <button class="btn" id="enrollBtn" disabled>Enroll from Camera</button>
+          <p class="tip">Tip: enrol from a couple of angles for better accuracy.</p>
+        </div>
+        <div id="known-list" style="margin-top:1.2rem;">
+          <h2>Enrolled Faces</h2>
+          <div id="knownItems" style="margin-top:0.6rem;">
+            <p style="font-size:0.82rem;color:var(--muted);">No faces enrolled yet.</p>
+          </div>
+          <button class="btn" id="clearBtn"
+            style="background:var(--surface2);font-size:0.8rem;padding:0.4rem 0.9rem;margin-top:0.6rem;">
+            Clear All
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page-body -->
+<canvas id="snapshot" width="640" height="480" style="display:none;"></canvas>
+
+<script>
+/* ══ FIREBASE ══ */
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyAYiEauMZ68q4ttTGisPxnFkO4PS7MFl08",
+  authDomain:        "facetime-71c4b.firebaseapp.com",
+  databaseURL:       "https://facetime-71c4b-default-rtdb.firebaseio.com",
+  projectId:         "facetime-71c4b",
+  storageBucket:     "facetime-71c4b.firebasestorage.app",
+  messagingSenderId: "958457330393",
+  appId:             "1:958457330393:web:ae20d97260cf4f5b3f1cc8",
+  measurementId:     "G-KTG1E26KY8"
+};
+if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.database();
+const ICE = { iceServers:[{ urls:["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302"] }] };
+
+/* ══ FACE-API DOM ══ */
+const MODEL_URL  = './models';
+const video      = document.getElementById('video');
+const overlay    = document.getElementById('overlay');
+const ctx        = overlay.getContext('2d');
+const statusBar  = document.getElementById('status-bar');
+const resultBox  = document.getElementById('resultBox');
+const startBtn   = document.getElementById('startBtn');
+const stopBtn    = document.getElementById('stopBtn');
+const enrollBtn  = document.getElementById('enrollBtn');
+const nameInput  = document.getElementById('nameInput');
+const knownItems = document.getElementById('knownItems');
+const snapCanvas = document.getElementById('snapshot');
+const snapCtx    = snapCanvas.getContext('2d');
+
+let stream=null, detecting=false;
+let labeledDescriptors=[], faceMatcher=null;
+
+/* SESSION FLAG — once a known face is matched, stays true until page refresh */
+let faceVerifiedThisSession = false;
+
+async function loadModels() {
+  try {
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+    statusBar.textContent = '✅ Models loaded — start the camera to begin.';
+    statusBar.style.color = '#4ade80';
+    startBtn.disabled = false;
+  } catch(e) {
+    statusBar.textContent = '❌ Failed to load models: ' + e.message;
+    statusBar.style.color = '#f87171';
+  }
+}
+
+startBtn.addEventListener('click', async () => {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video:{ width:640, height:480 } });
+    video.srcObject = stream;
+    await new Promise(r => video.addEventListener('loadedmetadata', r, { once:true }));
+    overlay.width = video.videoWidth;
+    overlay.height = video.videoHeight;
+    startBtn.disabled = true;
+    stopBtn.disabled  = false;
+    enrollBtn.disabled = false;
+    detecting = true;
+    statusBar.textContent = '📷 Camera running — detecting faces…';
+    statusBar.style.color = '#f0a500';
+    detectLoop();
+  } catch(e) { statusBar.textContent = '❌ Camera error: ' + e.message; }
+});
+
+stopBtn.addEventListener('click', () => {
+  detecting = false;
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  stream = null;
+  video.srcObject = null;
+  ctx.clearRect(0,0,overlay.width,overlay.height);
+  startBtn.disabled  = true;
+  stopBtn.disabled   = true;
+  enrollBtn.disabled = true;
+  statusBar.textContent = '⏹ Camera stopped.';
+  statusBar.style.color = '#888';
+  resultBox.innerHTML = 'Results will appear here.';
+  // Do NOT revoke session verification — stays unlocked once verified
+});
+
+async function detectLoop() {
+  if (!detecting) return;
+  const opts = new faceapi.TinyFaceDetectorOptions({ inputSize:320, scoreThreshold:0.5 });
+  const dets = await faceapi.detectAllFaces(video, opts).withFaceLandmarks().withFaceDescriptors();
+  ctx.clearRect(0,0,overlay.width,overlay.height);
+  const sx = overlay.width  / video.videoWidth;
+  const sy = overlay.height / video.videoHeight;
+  const results = [];
+
+  for (const det of dets) {
+    const b = det.detection.box;
+    const x=b.x*sx, y=b.y*sy, w=b.width*sx, h=b.height*sy;
+    let label='Unknown', distance=null;
+    if (faceMatcher) {
+      const m = faceMatcher.findBestMatch(det.descriptor);
+      label    = m.label==='unknown' ? 'Unknown' : m.label;
+      distance = m.distance;
+    }
+    const known = label !== 'Unknown';
+    ctx.strokeStyle = known ? '#4ade80' : '#f87171';
+    ctx.lineWidth   = 2;
+    ctx.strokeRect(x,y,w,h);
+    ctx.fillStyle = known ? '#4ade80' : '#f87171';
+    ctx.font = '14px system-ui';
+    ctx.fillText(distance!==null ? `${label} (${(1-distance).toFixed(2)})` : label, x, y-6);
+    results.push({ label, distance });
+  }
+
+  if (dets.length === 0) {
+    resultBox.innerHTML = '<span style="color:#3f3f46">No face detected.</span>';
+  } else {
+    resultBox.innerHTML = results.map(r => {
+      const conf = r.distance!==null
+        ? `<span class="conf"> — ${((1-r.distance)*100).toFixed(1)}% confidence</span>` : '';
+      return r.label==='Unknown'
+        ? `<span class="unknown">⚠ Unknown face</span>${conf}`
+        : `<span class="match">👤 ${r.label}</span>${conf}`;
+    }).join('<br>');
+
+    // Grant session verification the first time a known face is detected
+    if (!faceVerifiedThisSession && results.some(r => r.label !== 'Unknown')) {
+      faceVerifiedThisSession = true;
+      grantVerification();
+    }
+  }
+  requestAnimationFrame(detectLoop);
+}
+
+function grantVerification() {
+  unlockCallButtons(true);
+  document.getElementById('session-verified-badge').style.display = 'inline-flex';
+  statusBar.textContent = '✅ Face recognised — calls unlocked for this session.';
+  statusBar.style.color = '#4ade80';
+}
+
+enrollBtn.addEventListener('click', async () => {
+  const name = nameInput.value.trim();
+  if (!name) { alert('Enter a name first.'); return; }
+  enrollBtn.disabled = true;
+  enrollBtn.textContent = 'Capturing…';
+  snapCtx.drawImage(video, 0, 0, snapCanvas.width, snapCanvas.height);
+  const opts = new faceapi.TinyFaceDetectorOptions({ inputSize:320, scoreThreshold:0.4 });
+  const det  = await faceapi.detectSingleFace(snapCanvas, opts).withFaceLandmarks().withFaceDescriptor();
+  enrollBtn.disabled = false;
+  enrollBtn.textContent = 'Enroll from Camera';
+  if (!det) { alert('No face found in frame. Try again.'); return; }
+
+  const existing = labeledDescriptors.find(ld => ld.label === name);
+  if (existing) {
+    existing._descriptors.push(det.descriptor);
+    const idx = labeledDescriptors.indexOf(existing);
+    const updated = new faceapi.LabeledFaceDescriptors(name, existing._descriptors);
+    updated._descriptors = existing._descriptors;
+    labeledDescriptors[idx] = updated;
+  } else {
+    const ld = new faceapi.LabeledFaceDescriptors(name, [det.descriptor]);
+    ld._descriptors = [det.descriptor];
+    labeledDescriptors.push(ld);
+  }
+  faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
+  renderKnownList();
+  nameInput.value = '';
+  statusBar.textContent = `✅ Enrolled: ${name}`;
+  statusBar.style.color = '#4ade80';
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  labeledDescriptors = [];
+  faceMatcher = null;
+  renderKnownList();
+  // Don't revoke session verification
+});
+
+function renderKnownList() {
+  if (!labeledDescriptors.length) {
+    knownItems.innerHTML = '<p style="font-size:0.82rem;color:var(--muted);">No faces enrolled yet.</p>';
+    return;
+  }
+  const counts = {};
+  labeledDescriptors.forEach(ld => { counts[ld.label] = ld._descriptors ? ld._descriptors.length : 1; });
+  knownItems.innerHTML = Object.entries(counts).map(([n,c]) => `
+    <div class="known-item">
+      <span>👤 ${n} <span style="color:var(--muted);font-size:0.75rem;">(${c} sample${c>1?'s':''})</span></span>
+      <button class="remove" onclick="removePerson('${n}')">✕</button>
+    </div>`).join('');
+}
+function removePerson(name) {
+  labeledDescriptors = labeledDescriptors.filter(ld => ld.label !== name);
+  faceMatcher = labeledDescriptors.length ? new faceapi.FaceMatcher(labeledDescriptors, 0.55) : null;
+  renderKnownList();
+}
+window.addEventListener('load', loadModels);
+
+/* ══ WEBRTC ══ */
+const callScreen       = document.getElementById('call-fullscreen');
+const remoteVideo      = document.getElementById('fc-remote-video');
+const localVideo       = document.getElementById('fc-local-video');
+const remotePH         = document.getElementById('fc-remote-placeholder');
+const statusHud        = document.getElementById('fc-status-hud');
+const roomBadge        = document.getElementById('fc-room-badge');
+const qualityDot       = document.getElementById('fc-quality');
+const homeCodeDisp     = document.getElementById('home-code-display');
+const homeCodePill     = document.getElementById('home-code-pill');
+const homeCodeInput    = document.getElementById('home-code-input');
+const homeCreateBtn    = document.getElementById('home-create-btn');
+const homeJoinBtn      = document.getElementById('home-join-btn');
+const homeStatus       = document.getElementById('home-call-status');
+const homeFullscreenBtn= document.getElementById('home-fullscreen-btn');
+const homeLeaveBtn     = document.getElementById('home-leave-btn');
+const btnMute          = document.getElementById('btn-mute');
+const btnCamOff        = document.getElementById('btn-camoff');
+const btnHangup        = document.getElementById('btn-hangup');
+const btnExitFs        = document.getElementById('btn-exitfs');
+
+let pc=null, localCallStream=null, remoteStream=null, roomId=null, roomRef=null;
+let dbListeners=[], statsInterval=null, micMuted=false, camOff=false;
+
+function unlockCallButtons(yes) {
+  homeCreateBtn.classList.toggle('disabled-look', !yes);
+  homeJoinBtn.classList.toggle('disabled-look', !yes);
+  if (yes) {
+    homeStatus.textContent = '✅ Face verified — you can start or join a call.';
+    homeStatus.className   = 'connected';
+  } else {
+    homeStatus.textContent = 'Verify your face below to enable calls.';
+    homeStatus.className   = '';
+  }
+}
+
+/* Show/hide the in-call home buttons */
+function setCallActive(active) {
+  homeCreateBtn.style.display     = active ? 'none' : '';
+  homeJoinBtn.closest('.join-row').style.display = active ? 'none' : '';
+  homeFullscreenBtn.style.display = active ? '' : 'none';
+  homeLeaveBtn.style.display      = active ? '' : 'none';
+  if (!active) {
+    // Restore create/join visibility based on session
+    homeCreateBtn.style.display = '';
+    homeJoinBtn.closest('.join-row').style.display = '';
+    if (!faceVerifiedThisSession) {
+      homeCreateBtn.classList.add('disabled-look');
+      homeJoinBtn.classList.add('disabled-look');
+    }
+  }
+}
+
+function setHud(msg, type='') {
+  statusHud.textContent = msg;
+  statusHud.className   = type;
+}
+
+function onRef(ref, event, fn) { ref.on(event, fn); dbListeners.push({ ref, event, fn }); }
+
+function stopQuality() {
+  if (statsInterval) { clearInterval(statsInterval); statsInterval=null; }
+  qualityDot.className = '';
+}
+function startQuality() {
+  stopQuality();
+  statsInterval = setInterval(async () => {
+    if (!pc) return;
+    const stats = await pc.getStats().catch(()=>null);
+    if (!stats) return;
+    stats.forEach(r => {
+      if (r.type==='inbound-rtp' && r.kind==='video') {
+        const loss=r.packetsLost||0, recv=(r.packetsReceived||0)+loss;
+        const ratio = recv>0 ? loss/recv : 0;
+        qualityDot.className = ratio<0.02 ? 'good' : ratio<0.08 ? 'poor' : 'bad';
+      }
+    });
+  }, 3000);
+}
+
+async function cleanUp(removeRoom=false) {
+  stopQuality();
+  dbListeners.forEach(({ref,event,fn}) => ref.off(event,fn));
+  dbListeners = [];
+  if (pc)              { pc.close(); pc=null; }
+  if (localCallStream) { localCallStream.getTracks().forEach(t=>t.stop()); localCallStream=null; }
+  localVideo.srcObject  = null;
+  remoteVideo.srcObject = null;
+  remoteStream = null;
+  if (removeRoom && roomId) await db.ref('calls/'+roomId).remove().catch(()=>{});
+  roomId=null; roomRef=null;
+  micMuted=false; camOff=false;
+  btnMute.classList.remove('on');
+  btnCamOff.classList.remove('on');
+  btnMute.textContent   = '🎙️';
+  btnCamOff.textContent = '📷';
+  // Exit fullscreen overlay
+  callScreen.classList.remove('active');
+  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  remotePH.classList.remove('hidden');
+  homeCodeDisp.classList.remove('visible');
+  setCallActive(false);
+  homeStatus.textContent = 'Call ended.';
+  homeStatus.className   = '';
+}
+
+function buildPC() {
+  const conn = new RTCPeerConnection(ICE);
+  remoteStream = new MediaStream();
+  remoteVideo.srcObject = remoteStream;
+  localCallStream.getTracks().forEach(t => conn.addTrack(t, localCallStream));
+  conn.ontrack = e => {
+    e.streams[0].getTracks().forEach(t => remoteStream.addTrack(t));
+    remotePH.classList.add('hidden');
+    startQuality();
+  };
+  conn.onconnectionstatechange = () => {
+    const s = conn.connectionState;
+    if      (s==='connected')    setHud('✅ Connected · '+roomId, 'connected');
+    else if (s==='disconnected') { setHud('⚠️ Peer disconnected'); stopQuality(); }
+    else if (s==='failed')       setHud('Connection failed', 'error');
+  };
+  return conn;
+}
+
+function openFullscreen() {
+  callScreen.classList.add('active');
+  callScreen.requestFullscreen().catch(()=>{});
+}
+
+function showShareModal(code, callback) {
+  const modal       = document.getElementById('share-modal');
+  const continueBtn = document.getElementById('modal-continue-btn');
+
+  // Auto-copy to clipboard immediately when modal opens
+  navigator.clipboard.writeText(code).catch(() => {
+    // Clipboard API failed (e.g. non-HTTPS) — still show the modal
+  });
+
+  modal.style.display = 'flex';
+
+  continueBtn.onclick = () => {
+    modal.style.display = 'none';
+    callback();
+  };
+}
+
+/* ─── Create ─── */
+homeCreateBtn.addEventListener('click', async () => {
+  if (!faceVerifiedThisSession) return alert('⚠️ Verify your face first.');
+  if (roomId) return alert('You already have an active call.');
+
+  homeStatus.textContent = 'Starting camera…';
+  homeCreateBtn.classList.add('disabled-look');
+  homeJoinBtn.classList.add('disabled-look');
+
+  try {
+    localCallStream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
+    localVideo.srcObject = localCallStream;
+
+    roomId  = Math.random().toString(36).substring(2,8).toUpperCase();
+    roomRef = db.ref('calls/'+roomId);
+    pc = buildPC();
+
+    pc.onicecandidate = e => { if (e.candidate) roomRef.child('offerCandidates').push(e.candidate.toJSON()); };
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    await roomRef.set({ offer:{ type:offer.type, sdp:offer.sdp }, createdAt: Date.now() });
+
+    onRef(roomRef, 'value', async snap => {
+      const d = snap.val();
+      if (d?.answer && !pc.currentRemoteDescription)
+        await pc.setRemoteDescription(new RTCSessionDescription(d.answer));
+    });
+    onRef(roomRef.child('answerCandidates'), 'child_added', snap => {
+      pc.addIceCandidate(new RTCIceCandidate(snap.val())).catch(()=>{});
+    });
+
+    homeCodePill.textContent = roomId;
+    roomBadge.textContent    = roomId;
+    homeCodeDisp.classList.add('visible');
+    homeStatus.textContent = '📞 Waiting for peer… code: '+roomId;
+    homeStatus.className   = 'connected';
+    setCallActive(true);
+    // Show the share-code modal first, then open fullscreen on dismiss
+    showShareModal(roomId, () => {
+      openFullscreen();
+      setHud('📞 Waiting for peer…');
+    });
+  } catch(e) {
+    console.error(e);
+    homeStatus.textContent = 'Failed: '+e.message;
+    homeStatus.className   = 'error';
+    await cleanUp(false);
+    unlockCallButtons(faceVerifiedThisSession);
+  }
+});
+
+/* ─── Join ─── */
+homeJoinBtn.addEventListener('click', async () => {
+  if (!faceVerifiedThisSession) return alert('⚠️ Verify your face first.');
+  if (roomId) return alert('Leave your current call first.');
+
+  const code = homeCodeInput.value.trim().toUpperCase();
+  if (!code) return alert('Enter a call code first.');
+
+  homeStatus.textContent = 'Looking up room…';
+  homeCreateBtn.classList.add('disabled-look');
+  homeJoinBtn.classList.add('disabled-look');
+
+  try {
+    const snap = await db.ref('calls/'+code).get();
+    if (!snap.exists()) {
+      homeStatus.textContent = 'Room not found.';
+      homeStatus.className   = 'error';
+      unlockCallButtons(true);
+      return;
+    }
+    roomId  = code;
+    roomRef = db.ref('calls/'+roomId);
+
+    localCallStream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
+    localVideo.srcObject = localCallStream;
+
+    pc = buildPC();
+    pc.onicecandidate = e => { if (e.candidate) roomRef.child('answerCandidates').push(e.candidate.toJSON()); };
+
+    const roomData = snap.val();
+    await pc.setRemoteDescription(new RTCSessionDescription(roomData.offer));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    await roomRef.update({ answer:{ type:answer.type, sdp:answer.sdp } });
+
+    onRef(roomRef.child('offerCandidates'), 'child_added', snap => {
+      pc.addIceCandidate(new RTCIceCandidate(snap.val())).catch(()=>{});
+    });
+
+    roomBadge.textContent = roomId;
+    setCallActive(true);
+    openFullscreen();
+    setHud('Connecting…');
+  } catch(e) {
+    console.error(e);
+    homeStatus.textContent = 'Failed: '+e.message;
+    homeStatus.className   = 'error';
+    await cleanUp(false);
+    unlockCallButtons(faceVerifiedThisSession);
+  }
+});
+
+/* ─── Hangup (from fullscreen or home) ─── */
+async function doHangup() { await cleanUp(true); }
+btnHangup.addEventListener('click', doHangup);
+homeLeaveBtn.addEventListener('click', doHangup);
+
+/* ─── Exit fullscreen without leaving call ─── */
+btnExitFs.addEventListener('click', () => {
+  callScreen.classList.remove('active');
+  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  // homeFullscreenBtn stays visible so they can return
+});
+
+/* ─── Re-enter fullscreen from home ─── */
+homeFullscreenBtn.addEventListener('click', openFullscreen);
+
+/* ─── Mute ─── */
+btnMute.addEventListener('click', () => {
+  if (!localCallStream) return;
+  micMuted = !micMuted;
+  localCallStream.getAudioTracks().forEach(t => t.enabled = !micMuted);
+  btnMute.classList.toggle('on', micMuted);
+  btnMute.textContent = micMuted ? '🔇' : '🎙️';
+});
+
+/* ─── Camera off ─── */
+btnCamOff.addEventListener('click', () => {
+  if (!localCallStream) return;
+  camOff = !camOff;
+  localCallStream.getVideoTracks().forEach(t => t.enabled = !camOff);
+  btnCamOff.classList.toggle('on', camOff);
+  btnCamOff.textContent = camOff ? '🚫' : '📷';
+});
+
+/* ─── Copy code ─── */
+function copyCode(el, code) {
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => {
+    const prev = el.textContent;
+    el.textContent = 'Copied!';
+    setTimeout(() => { el.textContent = prev; }, 1500);
+  });
+}
+homeCodePill.addEventListener('click', () => copyCode(homeCodePill, roomId));
+roomBadge.addEventListener('click',    () => copyCode(roomBadge,    roomId));
+
+/* ─── Draggable PiP ─── */
+(function() {
+  const pip = document.getElementById('fc-local-pip');
+  let drag=false, ox=0, oy=0;
+  pip.addEventListener('mousedown', e => {
+    drag=true;
+    ox = e.clientX - pip.getBoundingClientRect().left;
+    oy = e.clientY - pip.getBoundingClientRect().top;
+    pip.style.transition='none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!drag) return;
+    const p = pip.parentElement.getBoundingClientRect();
+    let nx = Math.max(0, Math.min(p.width  - pip.offsetWidth,  e.clientX - p.left - ox));
+    let ny = Math.max(0, Math.min(p.height - pip.offsetHeight, e.clientY - p.top  - oy));
+    pip.style.left=nx+'px'; pip.style.top=ny+'px';
+    pip.style.right='auto'; pip.style.bottom='auto';
+  });
+  document.addEventListener('mouseup', () => { drag=false; pip.style.transition=''; });
+})();
+
+/* ─── Clean up on tab close ─── */
+window.addEventListener('beforeunload', () => { if (roomId) db.ref('calls/'+roomId).remove(); });
+</script>
+<div>
+<a href="./index.html" style="display: inline-block; padding: 12px 24px; background: rgba(125,211,252,0.12); border: 1px solid rgba(125,211,252,0.4); color: var(--accent); text-decoration: none; border-radius: 8px; font-size: 0.85rem; letter-spacing: 2px; transition: background 0.2s;">🏠 Back to Index</a>
+</div>
+</body>
+</html>
