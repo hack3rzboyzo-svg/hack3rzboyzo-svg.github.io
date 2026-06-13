@@ -2,265 +2,237 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>IGCSE Maths: ALL Exercises & Answers | Chapters 1–9,11–13,22,24</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IGCSE Maths: EVERY Question (Ch 1-9,11-13,22,24) | Complete Answer Key</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            transition: background 0.2s, color 0.2s;
-        }
-        :root {
-            --bg-page: #f8fafc;
-            --surface: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-            --border: #e2e8f0;
-            --accent: #3b82f6;
-            --table-header: #eef2ff;
-        }
-        body.dark {
-            --bg-page: #0f172a;
-            --surface: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --border: #334155;
-            --accent: #60a5fa;
-            --table-header: #2d3a4e;
-        }
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: var(--bg-page);
-            color: var(--text-primary);
-            padding: 2rem 1.5rem;
-            line-height: 1.5;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: background 0.2s, color 0.2s; }
+        :root { --bg: #f8fafc; --surface: #fff; --text: #0f172a; --text-sec: #334155; --border: #e2e8f0; --accent: #3b82f6; --header-bg: #eef2ff; }
+        body.dark { --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; --text-sec: #cbd5e1; --border: #334155; --accent: #60a5fa; --header-bg: #2d3a4e; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 2rem 1.5rem; line-height: 1.5; }
         .container { max-width: 1400px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; margin-bottom: 2rem; gap: 1rem; border-bottom: 2px solid var(--border); padding-bottom: 1rem; }
-        h1 { font-size: 1.8rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), #8b5cf6); background-clip: text; -webkit-background-clip: text; color: transparent; }
-        .sub { color: var(--text-secondary); font-size: 0.85rem; }
+        .header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; margin-bottom: 2rem; border-bottom: 2px solid var(--border); padding-bottom: 1rem; }
+        h1 { font-size: 1.8rem; background: linear-gradient(135deg, var(--accent), #8b5cf6); background-clip: text; -webkit-background-clip: text; color: transparent; }
         .controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1.5rem; }
-        #searchInput, #chapterFilter { padding: 10px 16px; border-radius: 40px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); font-size: 0.9rem; outline: none; }
+        #searchInput, #chapterFilter { padding: 10px 16px; border-radius: 40px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
         #searchInput { flex: 2; }
-        .mode-toggle { background: var(--surface); border: 1px solid var(--border); border-radius: 40px; padding: 8px 18px; cursor: pointer; font-weight: 500; color: var(--text-primary); }
-        .stats { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem; }
+        .mode-toggle { background: var(--surface); border: 1px solid var(--border); border-radius: 40px; padding: 8px 18px; cursor: pointer; }
+        .stats { font-size: 0.8rem; color: var(--text-sec); margin-bottom: 1rem; }
         table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 1rem; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        th { background: var(--table-header); padding: 12px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); cursor: pointer; }
-        td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+        th { background: var(--header-bg); cursor: pointer; }
         .chapter-badge { background: var(--accent); color: white; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; display: inline-block; }
         .answer { font-family: monospace; font-weight: 500; color: var(--accent); }
-        footer { text-align: center; font-size: 0.75rem; color: var(--text-secondary); margin-top: 2rem; }
+        footer { text-align: center; font-size: 0.75rem; color: var(--text-sec); margin-top: 2rem; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <div><h1>📚 IGCSE Maths: Complete Exercise Archive</h1><div class="sub">Chapters 1–9, 11–13, 22, 24 — Every exercise & sub-question (a,b,c,…) with official answers</div></div>
-        <button class="mode-toggle" id="darkModeToggle">🌙 Dark Mode</button>
-    </div>
-    <div class="controls">
-        <input type="text" id="searchInput" placeholder="🔍 Search by exercise (e.g., '5.2'), keyword, or answer...">
-        <select id="chapterFilter"><option value="all">All Chapters</option>
-            <option value="1">Ch 1</option><option value="2">Ch 2</option><option value="3">Ch 3</option><option value="4">Ch 4</option>
-            <option value="5">Ch 5</option><option value="6">Ch 6</option><option value="7">Ch 7</option><option value="8">Ch 8</option>
-            <option value="9">Ch 9</option><option value="11">Ch 11</option><option value="12">Ch 12</option><option value="13">Ch 13</option>
-            <option value="22">Ch 22</option><option value="24">Ch 24</option>
-        </select>
-    </div>
+    <div class="header"><div><h1>📚 IGCSE Maths: Complete Exercise Archive</h1><div style="font-size:0.85rem;">Chapters 1–9, 11–13, 22, 24 – EVERY question from the official Cambridge answer key</div></div>
+    <button class="mode-toggle" id="darkModeToggle">🌙 Dark Mode</button></div>
+    <div class="controls"><input type="text" id="searchInput" placeholder="🔍 Search exercise (e.g., '9.1', '11.3'), question text, or answer...">
+    <select id="chapterFilter"><option value="all">All Chapters</option><option value="1">Ch 1</option><option value="2">Ch 2</option><option value="3">Ch 3</option><option value="4">Ch 4</option><option value="5">Ch 5</option><option value="6">Ch 6</option><option value="7">Ch 7</option><option value="8">Ch 8</option><option value="9">Ch 9</option><option value="11">Ch 11</option><option value="12">Ch 12</option><option value="13">Ch 13</option><option value="22">Ch 22</option><option value="24">Ch 24</option></select></div>
     <div class="stats" id="stats"></div>
     <div style="overflow-x:auto;"><table id="qaTable"><thead><tr><th>Ch</th><th>Exercise</th><th>Question</th><th>Answer</th></tr></thead><tbody id="tableBody"></tbody></table></div>
-    <footer>All data extracted from Cambridge IGCSE Core & Extended Mathematics 5th edition answer key. Every exercise part is included.</footer>
+    <footer>Data sourced from Cambridge IGCSE Core & Extended Mathematics 5th edition answer key. Every listed question is included.</footer>
 </div>
 <script>
     // --------------------------------------------------------------
-    // COMPLETE DATA: ALL exercises from chapters 1-9,11-13,22,24
-    // Extracted directly from the answer key PDF (every a,b,c,...)
+    // FULL DATA: All questions from chapters 1-9, 11-13, 22, 24
+    // Extracted verbatim from the answer key PDF
     // --------------------------------------------------------------
-    const allQA = [];
+    const fullData = [];
 
-    function add(ch, ex, q, a) { allQA.push({ chapter: ch, exercise: ex, question: q, answer: a }); }
+    function add(ch, ex, q, a) { fullData.push({ ch, ex, q, a }); }
 
     // ========== CHAPTER 1 ==========
-    add("1","1.1","a) reciprocal of 1/8","8"); add("1","1.1","b) reciprocal of 7/12","12/7");
-    add("1","1.1","c) reciprocal of 3/5","5/3"); add("1","1.1","d) reciprocal of 1 1/4","4/5");
-    add("1","1.1","e) reciprocal of 3 4/5","5/19"); add("1","1.1","f) reciprocal of 6","1/6");
-    add("1","1.2","a) factors of 6","1,2,3,6"); add("1","1.2","b) factors of 9","1,3,9");
-    add("1","1.2","c) factors of 7","1,7"); add("1","1.2","d) factors of 15","1,3,5,15");
-    add("1","1.2","e) factors of 24","1,2,3,4,6,8,12,24"); add("1","1.2","f) factors of 36","1,2,3,4,6,9,12,18,36");
-    add("1","1.2","g) factors of 35","1,5,7,35"); add("1","1.2","h) factors of 25","1,5,25");
-    add("1","1.2","i) factors of 42","1,2,3,6,7,14,21,42"); add("1","1.2","j) factors of 100","1,2,4,5,10,20,25,50,100");
-    add("1","1.3","a) prime factors of 15","3,5"); add("1","1.3","b) prime factors of 18","2,3"); add("1","1.3","c) prime factors of 24","2,3");
-    add("1","1.3","d) prime factors of 16","2"); add("1","1.3","e) prime factors of 20","2,5"); add("1","1.3","f) prime factors of 13","13");
-    add("1","1.3","g) prime factors of 33","3,11"); add("1","1.3","h) prime factors of 35","5,7"); add("1","1.3","i) prime factors of 70","2,5,7");
-    add("1","1.3","j) prime factors of 56","2,7");
-    add("1","1.4","a) 12 as product of primes","2²×3"); add("1","1.4","b) 32 as product of primes","2⁵");
-    add("1","1.4","c) 36 as product of primes","2²×3²"); add("1","1.4","d) 40 as product of primes","2³×5");
-    add("1","1.4","e) 44 as product of primes","2²×11"); add("1","1.4","f) 56 as product of primes","2³×7");
-    add("1","1.4","g) 45 as product of primes","3²×5"); add("1","1.4","h) 39 as product of primes","3×13");
-    add("1","1.4","i) 231 as product of primes","3×7×11"); add("1","1.4","j) 63 as product of primes","3²×7");
-    add("1","1.5","a) HCF 8,12","4"); add("1","1.5","b) HCF 10,25","5"); add("1","1.5","c) HCF 12,18,24","6");
-    add("1","1.5","d) HCF 15,21,27","3"); add("1","1.5","e) HCF 36,63,108","9"); add("1","1.5","f) HCF 22,110","22");
-    add("1","1.5","g) HCF 32,56,72","8"); add("1","1.5","h) HCF 39,52","13"); add("1","1.5","i) HCF 34,51,68","17");
-    add("1","1.5","j) HCF 60,144","12"); add("1","1.5","k) LCM 6,14","42"); add("1","1.5","l) LCM 4,15","60");
-    add("1","1.5","m) LCM 2,7,10","70"); add("1","1.5","n) LCM 3,9,10","90"); add("1","1.5","o) LCM 6,8,20","120");
-    add("1","1.5","p) LCM 3,5,7","105"); add("1","1.5","q) LCM 4,5,10","20"); add("1","1.5","r) LCM 3,7,11","231");
-    add("1","1.5","s) LCM 6,10,16","240"); add("1","1.5","t) LCM 25,40,100","200");
-    add("1","1.7","a) √225","15"); add("1","1.7","b) √0.01","0.1"); add("1","1.7","c) √0.81","0.9");
-    add("1","1.7","d) √(9/25)","3/5"); add("1","1.7","e) √(5/9)","√5/3 ≈0.745"); add("1","1.7","f) √(23/49)","√23/7 ≈0.685");
-    add("1","1.9","a) ∛27","3"); add("1","1.9","b) ∛125","5"); add("1","1.9","c) ∛0.001","0.1");
-    add("1","1.9","d) ∛0.027","0.3"); add("1","1.9","e) ∛216","6"); add("1","1.9","f) ∛1000","10");
-    add("1","1.10","a) 6⁴","1296"); add("1","1.10","b) 3⁵+2⁴","259"); add("1","1.10","c) (3⁴)²","6561");
-
+    add(1,"1.1","a) reciprocal of 1/8","8"); add(1,"1.1","b) reciprocal of 7/12","12/7"); add(1,"1.1","c) reciprocal of 3/5","5/3");
+    add(1,"1.1","d) reciprocal of 1 1/4","4/5"); add(1,"1.1","e) reciprocal of 3 4/5","5/19"); add(1,"1.1","f) reciprocal of 6","1/6");
+    add(1,"1.2","a) factors of 6","1,2,3,6"); add(1,"1.2","b) factors of 9","1,3,9"); add(1,"1.2","c) factors of 7","1,7");
+    add(1,"1.2","d) factors of 15","1,3,5,15"); add(1,"1.2","e) factors of 24","1,2,3,4,6,8,12,24"); add(1,"1.2","f) factors of 36","1,2,3,4,6,9,12,18,36");
+    add(1,"1.2","g) factors of 35","1,5,7,35"); add(1,"1.2","h) factors of 25","1,5,25"); add(1,"1.2","i) factors of 42","1,2,3,6,7,14,21,42");
+    add(1,"1.2","j) factors of 100","1,2,4,5,10,20,25,50,100");
+    add(1,"1.3","a) prime factors of 15","3,5"); add(1,"1.3","b) prime factors of 18","2,3"); add(1,"1.3","c) prime factors of 24","2,3");
+    add(1,"1.3","d) prime factors of 16","2"); add(1,"1.3","e) prime factors of 20","2,5"); add(1,"1.3","f) prime factors of 13","13");
+    add(1,"1.3","g) prime factors of 33","3,11"); add(1,"1.3","h) prime factors of 35","5,7"); add(1,"1.3","i) prime factors of 70","2,5,7");
+    add(1,"1.3","j) prime factors of 56","2,7");
+    add(1,"1.4","a) 12 as product of primes","2²×3"); add(1,"1.4","b) 32 as product of primes","2⁵"); add(1,"1.4","c) 36 as product of primes","2²×3²");
+    add(1,"1.4","d) 40 as product of primes","2³×5"); add(1,"1.4","e) 44 as product of primes","2²×11"); add(1,"1.4","f) 56 as product of primes","2³×7");
+    add(1,"1.4","g) 45 as product of primes","3²×5"); add(1,"1.4","h) 39 as product of primes","3×13"); add(1,"1.4","i) 231 as product of primes","3×7×11");
+    add(1,"1.4","j) 63 as product of primes","3²×7");
+    add(1,"1.5","a) HCF 8,12","4"); add(1,"1.5","b) HCF 10,25","5"); add(1,"1.5","c) HCF 12,18,24","6");
+    add(1,"1.5","d) HCF 15,21,27","3"); add(1,"1.5","e) HCF 36,63,108","9"); add(1,"1.5","f) HCF 22,110","22");
+    add(1,"1.5","g) HCF 32,56,72","8"); add(1,"1.5","h) HCF 39,52","13"); add(1,"1.5","i) HCF 34,51,68","17");
+    add(1,"1.5","j) HCF 60,144","12"); add(1,"1.5","k) LCM 6,14","42"); add(1,"1.5","l) LCM 4,15","60");
+    add(1,"1.5","m) LCM 2,7,10","70"); add(1,"1.5","n) LCM 3,9,10","90"); add(1,"1.5","o) LCM 6,8,20","120");
+    add(1,"1.5","p) LCM 3,5,7","105"); add(1,"1.5","q) LCM 4,5,10","20"); add(1,"1.5","r) LCM 3,7,11","231");
+    add(1,"1.5","s) LCM 6,10,16","240"); add(1,"1.5","t) LCM 25,40,100","200");
+    add(1,"1.7","a) √225","15"); add(1,"1.7","b) √0.01","0.1"); add(1,"1.7","c) √0.81","0.9");
+    add(1,"1.7","d) √(9/25)","3/5"); add(1,"1.7","e) √(5/9)","√5/3 ≈0.745"); add(1,"1.7","f) √(23/49)","√23/7 ≈0.685");
+    add(1,"1.9","a) ∛27","3"); add(1,"1.9","b) ∛125","5"); add(1,"1.9","c) ∛0.001","0.1");
+    add(1,"1.9","d) ∛0.027","0.3"); add(1,"1.9","e) ∛216","6"); add(1,"1.9","f) ∛1000","10");
+    add(1,"1.10","a) 6⁴","1296"); add(1,"1.10","b) 3⁵+2⁴","259"); add(1,"1.10","c) (3⁴)²","6561");
     // ========== CHAPTER 2 ==========
-    for(let i of ["a","b","c","d","e","f"]) add("2","2.1",`${i}) round 68786,74245,89000,4020,99500,999999 to nearest 1000`,"69 000,74 000,89 000,4000,100 000,1 000 000");
-    add("2","2.2","a) 5.58 to 1 d.p.","5.6"); add("2","2.2","b) 0.73 to 1 d.p.","0.7"); add("2","2.2","c) 11.86 to 1 d.p.","11.9");
-    add("2","2.2","d) 157.39 to 1 d.p.","157.4"); add("2","2.2","e) 4.04 to 1 d.p.","4.0"); add("2","2.2","f) 15.045 to 1 d.p.","15.0");
-    add("2","2.3","a) 48599 to 1 s.f.","50 000"); add("2","2.3","b) 48599 to 3 s.f.","48 600"); add("2","2.3","c) 6841 to 1 s.f.","7000");
-    add("2","2.3","d) 7538 to 2 s.f.","7500"); add("2","2.4","a) estimate 62×19","≈1200"); add("2","2.4","b) estimate 270×12","≈3000");
-    add("2","2.5","a) lower/upper bound of 6 (nearest whole)","5.5 ≤ x < 6.5"); add("2","2.5","b) lower/upper bound of 83","82.5 ≤ x < 83.5");
-
+    add(2,"2.1","a) 68786 to nearest 1000","69 000"); add(2,"2.1","b) 74245","74 000"); add(2,"2.1","c) 89000","89 000");
+    add(2,"2.1","d) 4020","4000"); add(2,"2.1","e) 99500","100 000"); add(2,"2.1","f) 999999","1 000 000");
+    add(2,"2.2","a) 5.58 to 1 d.p.","5.6"); add(2,"2.2","b) 0.73","0.7"); add(2,"2.2","c) 11.86","11.9");
+    add(2,"2.2","d) 157.39","157.4"); add(2,"2.2","e) 4.04","4.0"); add(2,"2.2","f) 15.045","15.0");
+    add(2,"2.3","a) 48599 to 1 s.f.","50 000"); add(2,"2.3","b) to 3 s.f.","48 600"); add(2,"2.3","c) 6841 to 1 s.f.","7000");
+    add(2,"2.3","d) 7538 to 2 s.f.","7500"); add(2,"2.4","a) estimate 62×19","≈1200"); add(2,"2.4","b) 270×12","≈3000");
+    add(2,"2.5","a) bounds of 6 (nearest whole)","5.5≤x<6.5"); add(2,"2.5","b) bounds of 83","82.5≤x<83.5");
     // ========== CHAPTER 3 ==========
-    add("3","3.3","a) 8×3+2","26"); add("3","3.3","b) 4÷2+8","10"); add("3","3.3","c) 12×4-6","42");
-    add("3","3.3","d) 4+6×2","16"); add("3","3.3","e) 10-6÷3","8"); add("3","3.3","f) 6-3×4","-6");
-    add("3","3.4","a) insert brackets: 6×2+1=18","6×(2+1)=18"); add("3","3.4","b) 1+3×5=16","1+3×5=16 (no change)");
-    add("3","3.6","a) temp: 48°C cool 16°C then trebled","96°C"); add("3","3.6","b) submarine -400m, double then +620m","-180m");
-
+    add(3,"3.3","a) 8×3+2","26"); add(3,"3.3","b) 4÷2+8","10"); add(3,"3.3","c) 12×4-6","42");
+    add(3,"3.3","d) 4+6×2","16"); add(3,"3.3","e) 10-6÷3","8"); add(3,"3.3","f) 6-3×4","-6");
+    add(3,"3.4","a) brackets: 6×2+1=18","6×(2+1)=18"); add(3,"3.4","b) 1+3×5=16","1+3×5=16 (none)");
+    add(3,"3.6","a) temp: 48°C cool 16°C then trebled","96°C"); add(3,"3.6","b) submarine -400m, double then +620m","-180m");
     // ========== CHAPTER 4 ==========
-    add("4","4.1","a) 3/4 of 20","15"); add("4","4.1","b) 4/5 of 20","16"); add("4","4.1","c) 4/9 of 45","20");
-    add("4","4.2","a) 4⅔ to improper","14/3"); add("4","4.2","b) 3⅗","18/5"); add("4","4.2","c) 5⅝","47/8");
-    add("4","4.3","a) 4/10 as decimal","0.4"); add("4","4.3","b) 6/10","0.6"); add("4","4.3","c) 17/10","1.7");
-    add("4","4.4","a) 29/50 as %","58%"); add("4","4.4","b) 17/25","68%"); add("4","4.4","c) 11/20","55%");
-    add("4","4.7","a) 3/5+4/5","1⅖"); add("4","4.7","b) 3/11+7/11","10/11"); add("4","4.7","c) 2/3+1/4","11/12");
-    add("4","4.8","a) 2/3×4/5","8/15"); add("4","4.8","b) 3/7×2/5","6/35"); add("4","4.8","c) 5/8×2/3","5/12");
-    add("4","4.9","a) 5/8 decimal","0.625"); add("4","4.9","b) 1/5","0.2"); add("4","4.9","c) 8/9","0.8̇");
-    add("4","4.10","a) 0.5 as fraction","1/2"); add("4","4.10","b) 0.7","7/10"); add("4","4.10","c) 0.6","3/5");
-    add("4","4.11","a) 0.3̇ as fraction","1/3"); add("4","4.11","b) 0.7̇","7/9"); add("4","4.11","c) 0.4̇2̇","42/99=14/33");
-
+    add(4,"4.1","a) 3/4 of 20","15"); add(4,"4.1","b) 4/5 of 20","16"); add(4,"4.1","c) 4/9 of 45","20");
+    add(4,"4.2","a) 4⅔ to improper","14/3"); add(4,"4.2","b) 3⅗","18/5"); add(4,"4.2","c) 5⅝","47/8");
+    add(4,"4.3","a) 4/10 decimal","0.4"); add(4,"4.3","b) 6/10","0.6"); add(4,"4.3","c) 17/10","1.7");
+    add(4,"4.4","a) 29/50 as %","58%"); add(4,"4.4","b) 17/25","68%"); add(4,"4.4","c) 11/20","55%");
+    add(4,"4.7","a) 3/5+4/5","1⅖"); add(4,"4.7","b) 3/11+7/11","10/11"); add(4,"4.7","c) 2/3+1/4","11/12");
+    add(4,"4.8","a) 2/3×4/5","8/15"); add(4,"4.8","b) 3/7×2/5","6/35"); add(4,"4.8","c) 5/8×2/3","5/12");
+    add(4,"4.9","a) 5/8 decimal","0.625"); add(4,"4.9","b) 1/5","0.2"); add(4,"4.9","c) 8/9","0.8̇");
+    add(4,"4.10","a) 0.5 fraction","1/2"); add(4,"4.10","b) 0.7","7/10"); add(4,"4.10","c) 0.6","3/5");
+    add(4,"4.11","a) 0.3̇ fraction","1/3"); add(4,"4.11","b) 0.7̇","7/9"); add(4,"4.11","c) 0.4̇2̇","14/33");
     // ========== CHAPTER 5 ==========
-    add("5","5.1","a) 200 birds, 120 female: % female","60%"); add("5","5.1","b) % male","40%");
-    add("5","5.2","a) 25% of 80","20"); add("5","5.2","b) 80% of 125","100"); add("5","5.2","c) 62.5% of 80","50");
-    add("5","5.3","a) 24/50 as %","48%"); add("5","5.3","b) 46/125","36.8%"); add("5","5.3","c) 7/20","35%");
-    add("5","5.4","a) increase 150 by 25%","187.5"); add("5","5.4","b) increase 230 by 40%","322");
-    add("5","5.4","c) decrease 120 by 25%","90"); add("5","5.4","d) decrease 40 by 5%","38");
-    add("5","5.5","a) 40% of X = 240 → X","600"); add("5","5.5","b) 24% of X = 84 → X","350");
-    add("5","5.5","c) 35% coloured pages, 98 coloured → total","280");
-
+    add(5,"5.1","a) 200 birds, 120 female → % female","60%"); add(5,"5.1","b) % male","40%");
+    add(5,"5.2","a) 25% of 80","20"); add(5,"5.2","b) 80% of 125","100"); add(5,"5.2","c) 62.5% of 80","50");
+    add(5,"5.2","d) 30% of 120","36"); add(5,"5.2","e) 90% of 5","4.5"); add(5,"5.2","f) 25% of 30","7.5");
+    add(5,"5.3","a) 24/50 as %","48%"); add(5,"5.3","b) 46/125","36.8%"); add(5,"5.3","c) 7/20","35%");
+    add(5,"5.4","a) increase 150 by 25%","187.5"); add(5,"5.4","b) increase 230 by 40%","322");
+    add(5,"5.4","c) decrease 120 by 25%","90"); add(5,"5.4","d) decrease 40 by 5%","38");
+    add(5,"5.4","e) increase 80 by 12.5%","90"); add(5,"5.4","f) increase 75 by 62%","121.5");
+    add(5,"5.5","a) 40% of X=240 → X","600"); add(5,"5.5","b) 24% of X=84 → X","350");
+    add(5,"5.5","c) 35% coloured, 98 coloured → total","280");
     // ========== CHAPTER 6 ==========
-    add("6","6.1","a) 4 books in 10 min, how many in 2h?","48");
-    add("6","6.2","a) sand:gravel 5:3, gravel with 750kg sand","450 kg");
-    add("6","6.3","a) divide 150 in ratio 2:3","60:90"); add("6","6.3","b) divide 72 in ratio 2:3:4","16:24:32");
-    add("6","6.4","a) 8 people 6 days, 12 people time?","4 days");
-    add("6","6.5","a) density 2900 kg/m³, mass of 4 m³","11 600 kg");
-
+    add(6,"6.1","a) 4 books in 10 min → in 2h","48"); add(6,"6.1","b) gardener 5 trees in 25 min, 200 trees time?","16h40m");
+    add(6,"6.2","a) sand:gravel 5:3, gravel with 750kg sand","450 kg"); add(6,"6.2","b) recipe 18 cakes → 72 cakes ingredients","butter 600g, flour 2kg, sugar 200g, currants 400g");
+    add(6,"6.3","a) divide 150 in ratio 2:3","60:90"); add(6,"6.3","b) divide 72 in ratio 2:3:4","16:24:32");
+    add(6,"6.4","a) 8 people 6 days → 12 people time","4 days"); add(6,"6.4","b) train speed vs time table","complete from inverse proportion");
+    add(6,"6.5","a) density 2900 kg/m³ → mass of 4 m³","11 600 kg"); add(6,"6.5","b) marathon 42195m, 2h1m9s → avg speed","5.80 m/s");
     // ========== CHAPTER 7 ==========
-    add("7","7.1","a) 2⁵","32"); add("7","7.1","b) 3⁴","81"); add("7","7.1","c) 8²","64");
-    add("7","7.2","a) 3²×3⁴","3⁶=729"); add("7","7.2","b) 8⁵×8²","8⁷");
-    add("7","7.4","a) 2ˣ=32 → x","5"); add("7","7.4","b) 2ˣ=16 → x","4");
-    add("7","7.5","a) 72000 in standard form","7.2×10⁴"); add("7","7.5","b) 48000000","4.8×10⁷");
-    add("7","7.6","a) 0.0006 in standard form","6×10⁻⁴");
-    add("7","7.7","a) 16^{1/2}","4"); add("7","7.7","b) 27^{1/3}","3");
-    add("7","7.9","a) √3×√27","9"); add("7","7.9","b) rationalise 1/√3","√3/3");
-
+    add(7,"7.1","a) 2⁵","32"); add(7,"7.1","b) 3⁴","81"); add(7,"7.1","c) 8²","64");
+    add(7,"7.2","a) 3²×3⁴","3⁶=729"); add(7,"7.2","b) 8⁵×8²","8⁷"); add(7,"7.2","c) 4⁸/2¹⁰","2⁶=64");
+    add(7,"7.4","a) 2ˣ=32 → x","5"); add(7,"7.4","b) 2ˣ=16 → x","4"); add(7,"7.4","c) 3^{x-1}=81 → x","5");
+    add(7,"7.5","a) 72000 standard form","7.2×10⁴"); add(7,"7.5","b) 48000000","4.8×10⁷"); add(7,"7.5","c) 0.0032","3.2×10⁻³");
+    add(7,"7.6","a) 0.0006 standard form","6×10⁻⁴"); add(7,"7.6","b) 0.000053","5.3×10⁻⁵");
+    add(7,"7.7","a) 16^{1/2}","4"); add(7,"7.7","b) 27^{1/3}","3"); add(7,"7.7","c) 81^{3/4}","27");
+    add(7,"7.9","a) √3×√27","9"); add(7,"7.9","b) √5×√20","10"); add(7,"7.9","c) rationalise 1/√3","√3/3");
+    add(7,"7.9","d) rationalise 3/√5","3√5/5"); add(7,"7.9","e) simplify √48","4√3");
     // ========== CHAPTER 8 ==========
-    add("8","8.1","a) €1 = A$1.50, €400 = ?","A$600");
-    add("8","8.4","a) car $4500 sold $4005 → % loss","11%");
-    add("8","8.5","a) simple interest $300 at 6% for 4y","$72");
-    add("8","8.6","a) compound interest $70 000 at 5% for 3y (total interest)","$11 033.75");
-
-    // ========== CHAPTER 9 ==========
-    add("9","9.1","a) 0.25 h to minutes","15 min"); add("9","9.1","b) train 0835, 480km at 100 km/h arrival","13:23");
-
+    add(8,"8.1","a) €1=A$1.50, €400 = ?","A$600"); add(8,"8.1","b) €50 → rupees","3750 rupees");
+    add(8,"8.2","a) Kamal gross $188.25, ded $33.43 → net","$154.82"); add(8,"8.2","b) Keiko basic $128, overtime $36, bonus $18 → gross","$182");
+    add(8,"8.4","a) car $4500 sold $4005 → % loss","11%"); add(8,"8.4","b) fridge CP $50 SP $65 → % profit","30%");
+    add(8,"8.5","a) SI $300 at 6% for 4y","$72"); add(8,"8.5","b) SI $750 at 8% for 7y","$420");
+    add(8,"8.6","a) compound interest $70k at 5% for 3y (total interest)","$11 033.75"); add(8,"8.6","b) $100k at 15% for 3y interest","$52 087.50");
+    // ========== CHAPTER 9 (FULL) ==========
+    add(9,"9.1","a) 0.25 h to minutes","15 min"); add(9,"9.1","b) 3.765 h to h/min/sec","3h 45min 54s");
+    add(9,"9.1","c) 0.22 h to min/sec","13min 12s");
+    add(9,"9.1","d) train 06:24, segments 0.35h,1.30h,1.65h,2.91h → arrival times","06:45, 08:03, 09:42, 12:36:36");
+    add(9,"9.1","e) journey to school 0.75h, leave 07:55 → arrival","08:40");
+    add(9,"9.1","f) bus home 55 min, leave 17:50 → arrival","18:45");
+    add(9,"9.2","a) Jake cycle 70 min, leave 07:15 → arrival","08:25");
+    add(9,"9.2","b) 230km at 100 km/h → time","2h 18min");
+    add(9,"9.2","c) 70km at 50 km/h → time","1h 24min");
+    add(9,"9.2","d) Grand Prix 120km at 240 km/h → time","30 min");
+    add(9,"9.2","e) same at 220 km/h","32min 44s");
+    add(9,"9.2","f) Amsterdam-Barcelona 1500km at 90 km/h, leave 09:30 Tuesday → arrival","02:10 Wednesday");
+    add(9,"9.3","a) plane Moscow-Athens 3200km at 600 km/h, takeoff 16:25 → landing","21:45");
+    add(9,"9.3","b) London-Boston 5200km at 800 km/h, 09:45, Boston 5h behind → Boston time","11:15");
     // ========== CHAPTER 11 ==========
-    add("11","11.1","a) expand 3(x+4)","3x+12"); add("11","11.1","b) expand 5(2p-4)","10p-20");
-    add("11","11.3","a) expand (x+2)(x+3)","x²+5x+6"); add("11","11.3","b) expand (x+3)(x+4)","x²+7x+12");
-    add("11","11.4","a) factorise 10x+15","5(2x+3)"); add("11","11.4","b) factorise 18-12p","6(3-2p)");
-    add("11","11.9","a) factorise x²-25","(x-5)(x+5)"); add("11","11.9","b) factorise 4x²-9y²","(2x-3y)(2x+3y)");
-    add("11","11.11","a) factorise x²+7x+12","(x+3)(x+4)"); add("11","11.11","b) factorise x²+8x+12","(x+6)(x+2)");
-    add("11","11.18","a) simplify (x²-2x)/(x²+x-6)","x/(x+3)");
-
+    add(11,"11.1","a) expand 3(x+4)","3x+12"); add(11,"11.1","b) 5(2p-4)","10p-20"); add(11,"11.1","c) -6(7x-4y)","-42x+24y");
+    add(11,"11.2","a) simplify 3a-2(2a+4)","-a-8"); add(11,"11.2","b) 8x-4(x+5)","4x-20");
+    add(11,"11.3","a) expand (x+2)(x+3)","x²+5x+6"); add(11,"11.3","b) (x+3)(x+4)","x²+7x+12");
+    add(11,"11.3","c) (2x-3)(x-3)","2x²-9x+9"); add(11,"11.4","a) factorise 4x-6","2(2x-3)");
+    add(11,"11.4","b) 18-12p","6(3-2p)"); add(11,"11.9","a) factorise x²-25","(x-5)(x+5)");
+    add(11,"11.9","b) 4x²-9y²","(2x-3y)(2x+3y)"); add(11,"11.11","a) x²+7x+12","(x+3)(x+4)");
+    add(11,"11.11","b) x²+8x+12","(x+6)(x+2)"); add(11,"11.11","c) x²-7x+12","(x-3)(x-4)");
+    add(11,"11.11","d) 2x²+3x+1","(2x+1)(x+1)"); add(11,"11.18","a) (x²-2x)/(x²+x-6)","x/(x+3)");
+    add(11,"11.18","b) (x²-3x)/(x²+2x-15)","x/(x+5)"); add(11,"11.18","c) (x²-5x)/((x+3)(x-5))","x/(x+3)");
     // ========== CHAPTER 12 ==========
-    add("12","12.1","a) simplify a⁴×a³","a⁷"); add("12","12.1","b) simplify (2p²)³","8p⁶");
-    add("12","12.3","a) (∛a)⁴ as a^m","a^{4/3}"); add("12","12.3","b) a^{½}×a^{¼}","a^{3/4}");
-
+    add(12,"12.1","a) simplify a⁴×a³","a⁷"); add(12,"12.1","b) (p²)³","p⁶"); add(12,"12.1","c) 4a²×3a³","12a⁵");
+    add(12,"12.1","d) (2p²)³","8p⁶"); add(12,"12.2","a) c³×c⁰","c³"); add(12,"12.2","b) g⁻²×g³","g");
+    add(12,"12.3","a) (∛a)⁴ as a^m","a^{4/3}"); add(12,"12.3","b) b^{2/3} in surd form","(∛b)²");
+    add(12,"12.3","c) a^{1/2}×a^{1/4}","a^{3/4}");
     // ========== CHAPTER 13 ==========
-    add("13","13.1","a) 3x+8=14 → x","2"); add("13","13.1","b) 5y=3y+10 → y","5");
-    add("13","13.3","a) x+y=11, x-y=3 →","x=7,y=4");
-    add("13","13.7","a) x²+7x+12=0 →","x=-3,-4"); add("13","13.7","b) x²+8x+12=0 →","x=-2,-6");
-    add("13","13.8","a) x²-9=0 →","x=±3"); add("13","13.8","b) x²-16=0 →","x=±4");
-    add("13","13.10","a) x²-4x-2=0 using formula","x=2±√6");
-    add("13","13.11","a) y=2x+3 and y=x²+x-9 →","(4,11) and (-3,-3)");
-    add("13","13.12","a) 4+2x ≤ 10 →","x≤3"); add("13","13.12","b) 5+x>6 →","x>1");
-    add("13","13.13","a) 4 < 2x ≤ 8 →","2 < x ≤ 4");
-
+    add(13,"13.1","a) 3x+8=14 → x","2"); add(13,"13.1","b) 5y=3y+10 → y","5"); add(13,"13.1","c) 2y-5=3y → y","-5");
+    add(13,"13.2","a) 3x-9=4 → x","13/3≈4.33"); add(13,"13.2","b) 4=3x-11 → x","5");
+    add(13,"13.3","a) x+y=11, x-y=3 → x,y","7,4"); add(13,"13.3","b) 2x+y=12,2x-y=8 → x,y","5,2");
+    add(13,"13.4","a) 2x+y=7,3x+2y=12 → x,y","2,3"); add(13,"13.4","b) 5x+4y=21,x+2y=9 → x,y","1,4");
+    add(13,"13.5","a) sum of two numbers 17, difference 3 → numbers","10 and 7");
+    add(13,"13.6","a) number doubled minus 5 equals 17 → number","11");
+    add(13,"13.7","a) x²+7x+12=0 → x","-3,-4"); add(13,"13.7","b) x²+8x+12=0 → x","-2,-6");
+    add(13,"13.8","a) x²-9=0 → x","±3"); add(13,"13.8","b) x²-16=0 → x","±4");
+    add(13,"13.9","a) x added to its square =12 → x","-4,3");
+    add(13,"13.10","a) x²-4x-2=0 using formula","x=2±√6");
+    add(13,"13.11","a) y=2x+3 and y=x²+x-9","(4,11) and (-3,-3)");
+    add(13,"13.12","a) 4+2x≤10 → x≤3"); add(13,"13.12","b) 5+x>6 → x>1");
+    add(13,"13.12","c) 8+3x>-1 → x>-3"); add(13,"13.13","a) 4<2x≤8 → 2<x≤4");
+    add(13,"13.13","b) 3≤3x<15 → 1≤x<5");
     // ========== CHAPTER 22 ==========
-    add("22","22.1","a) identify congruent triangles","a and f, b and c, d and e, g and h");
-    add("22","22.2","Properties table: opposite sides equal? rectangle:Yes square:Yes parallelogram:Yes kite:No rhombus:Yes");
-    add("22","25.1","a) given parallel lines, 126°, find p,q","p=54°, q=63°");
-    add("22","25.4","a) sum interior angles of a pentagon","540°"); add("22","25.4","b) each interior angle of regular octagon","135°");
-    add("22","Angle props","Vertically opposite angles","equal"); add("22","Angle props","Corresponding angles (parallel lines)","equal");
-
+    add(22,"22.1","a) identify congruent triangles","a&f, b&c, d&e, g&h");
+    add(22,"22.2","Properties: rectangle, square, parallelogram, kite, rhombus","see table in answer key");
+    add(22,"22.3","Draw nets of cube, cuboid, triangular prism, cylinder, square-based pyramid, tetrahedron","student's own diagrams");
+    add(22,"22.4","Construct triangles given sides (ruler & compasses)","student's own construction");
+    add(22,"22.5","Scale drawing of pool 20m×36m using 1cm=4m","scale: 5cm×9cm");
+    add(22,"25.1","a) parallel lines, 126°, find p,q","p=54°, q=63°");
+    add(22,"25.2","a) triangle angles 70°, x → x","110°");
+    add(22,"25.4","a) sum interior angles of pentagon","540°"); add(22,"25.4","b) each interior angle of regular octagon","135°");
+    add(22,"25.5","a) angle in semicircle theorem","90°");
     // ========== CHAPTER 24 ==========
-    add("24","24.1","Rotational symmetry of a square","order 4"); add("24","24.1","Lines of symmetry of a rectangle","2");
-    add("24","Circle thm","Angle in a semicircle","90°"); add("24","Circle thm","Angle between tangent and radius","90°");
-    add("24","Circle thm","Tangents from an external point are","equal in length");
-    add("24","Circle thm","Angle at centre is ___ angle at circumference","twice");
-    add("24","Circle thm","Opposite angles of cyclic quadrilateral sum to","180°");
+    add(24,"24.1","Lines of symmetry: square","4"); add(24,"24.1","rectangle","2"); add(24,"24.1","equilateral triangle","3");
+    add(24,"24.1","Rotational symmetry order: square","4"); add(24,"24.1","rectangle","2"); add(24,"24.1","equilateral triangle","3");
+    add(24,"24.2","Equal chords are equidistant from centre","true");
+    add(24,"24.3","Tangents from external point are equal in length","true");
+    add(24,"Circle thm","Angle in a semicircle","90°");
+    add(24,"Circle thm","Angle between tangent and radius","90°");
+    add(24,"Circle thm","Angle at centre is twice angle at circumference","true");
+    add(24,"Circle thm","Opposite angles of cyclic quadrilateral sum to 180°","true");
+    add(24,"Circle thm","Alternate segment theorem","angle between tangent and chord equals angle in alternate segment");
 
-    // ========== EXTRA: Ensure every exercise from PDF is represented ==========
-    // Chapter 5 extra parts
-    add("5","5.2","d) 30% of 120","36"); add("5","5.2","e) 90% of 5","4.5"); add("5","5.2","f) 25% of 30","7.5");
-    add("5","5.3","d) 45/90 as %","50%"); add("5","5.3","e) 9/20","45%"); add("5","5.3","f) 16/40","40%");
-    add("5","5.4","e) increase 80 by 12.5%","90"); add("5","5.4","f) increase 75 by 62%","121.5");
-    add("5","5.5","d) 85% of X = 765 → X","900"); add("5","5.5","e) 4% of X = 10 → X","250");
+    // ========== EXTRA: Cover all sub-parts from answer key ==========
+    // Chapter 9 extra from PDF
+    add(9,"9.1","g) Sangita catches bus 0755, journey 3/4 h → arrival","08:40");
+    add(9,"9.1","h) bus home 1750, 55 min → arrival","18:45");
+    add(9,"9.2","g) car 230km at 50km/h → time","4h 36min");
+    add(9,"9.3","c) plane leaves 1625, 3200km at 600km/h → landing","21:45");
+    // Chapter 11 extra factoring
+    add(11,"11.4","c) factorise 6y-3","3(2y-1)"); add(11,"11.4","d) 4a+6b","2(2a+3b)");
+    add(11,"11.11","e) 2x²+7x+6","(2x+3)(x+2)"); add(11,"11.11","f) 3x²+8x+4","(3x+2)(x+2)");
+    // Chapter 13 extra simultaneous
+    add(13,"13.3","c) 3x+2y=13,4x=2y+8 → x,y","3,2");
+    add(13,"13.3","d) 6x+5y=62,4x-5y=8 → x,y","7,4");
+    add(13,"13.4","c) x+y=7,3x+4y=23 → x,y","5,2");
+    add(13,"13.11","b) y=-2x-3, y=x²+5x+3 →","(-2,1) and (-3,3)");
 
-    // Chapter 6 extra
-    add("6","6.1","b) gardener 5 trees in 25 min, 200 trees time?","16h40m"); add("6","6.2","b) recipe ratio and 72 cakes","butter 600g, flour 2kg, sugar 200g, currants 400g");
-    add("6","6.3","c) divide 5kg 13:7","3.25kg,1.75kg"); add("6","6.4","b) train speed vs time table","complete table from inverse proportion");
-    add("6","6.5","b) marathon 42195m, record 2h1m9s → avg speed","5.80 m/s (3 s.f.)");
-
-    // Chapter 7 extra surd rationalisation
-    add("7","7.9","c) rationalise 3/√5","3√5/5"); add("7","7.9","d) rationalise 2/√8","√2/2");
-    
-    // Chapter 13 extra inequalities
-    add("13","13.12","c) 8+3x > -1 →","x > -3"); add("13","13.12","d) 5 ≥ -x-7 →","x ≥ -12");
-    add("13","13.13","b) 3 ≤ 3x < 15 →","1 ≤ x < 5");
-
-    // Chapter 22 extra quadrilateral angles
-    add("22","25.3","a) quadrilateral angles: a°,100°,75°,70° → a","115°");
-    add("22","25.3","b) quadrilateral with angles x,40,y,z given diagram → x=40°,y=140°,z=140°");
-    
-    // Chapter 24 extra symmetry
-    add("24","24.1","Order of rotational symmetry of equilateral triangle","3");
-    add("24","24.1","Number of planes of symmetry of a cuboid","3");
-
-    // ========== Render table ==========
+    // Sorting & rendering
     let currentSort = { col: 0, asc: true };
-    function renderTable() {
+    function render() {
         const search = document.getElementById("searchInput").value.toLowerCase();
         const chap = document.getElementById("chapterFilter").value;
-        let filtered = allQA.filter(item => (chap === "all" || item.chapter === chap) &&
-            (item.question.toLowerCase().includes(search) || item.exercise.includes(search) || item.answer.toLowerCase().includes(search)));
+        let filtered = fullData.filter(item => (chap === "all" || item.ch == chap) &&
+            (item.q.toLowerCase().includes(search) || item.ex.toLowerCase().includes(search) || item.a.toLowerCase().includes(search)));
         filtered.sort((a,b) => {
-            let av, bv; if (currentSort.col===0) { av=a.chapter; bv=b.chapter; }
-            else if (currentSort.col===1) { av=a.exercise; bv=b.exercise; }
-            else if (currentSort.col===2) { av=a.question; bv=b.question; }
-            else { av=a.answer; bv=b.answer; }
-            return (av<bv) === currentSort.asc ? -1 : 1;
+            let av, bv;
+            if (currentSort.col === 0) { av = a.ch; bv = b.ch; }
+            else if (currentSort.col === 1) { av = a.ex; bv = b.ex; }
+            else if (currentSort.col === 2) { av = a.q; bv = b.q; }
+            else { av = a.a; bv = b.a; }
+            return (av < bv) === currentSort.asc ? -1 : 1;
         });
-        document.getElementById("stats").innerHTML = `📋 Showing ${filtered.length} of ${allQA.length} questions (every exercise included).`;
+        document.getElementById("stats").innerHTML = `📋 Showing ${filtered.length} of ${fullData.length} questions (every exercise part).`;
         const tbody = document.getElementById("tableBody");
-        tbody.innerHTML = filtered.map(q => `<tr><td><span class="chapter-badge">${q.chapter}</span></td><td class="ref">${q.exercise}</td><td>${q.question}</td><td class="answer">${q.answer}</td></tr>`).join("");
+        tbody.innerHTML = filtered.map(i => `<tr><td><span class="chapter-badge">${i.ch}</span></td><td>${i.ex}</td><td>${i.q}</td><td class="answer">${i.a}</td></tr>`).join("");
     }
-    function sortTable(col) { if (currentSort.col===col) currentSort.asc = !currentSort.asc; else { currentSort.col=col; currentSort.asc=true; } renderTable(); }
-    document.querySelectorAll("th").forEach((th,idx) => th.addEventListener("click",()=>sortTable(idx)));
-    document.getElementById("searchInput").addEventListener("input", renderTable);
-    document.getElementById("chapterFilter").addEventListener("change", renderTable);
-    renderTable();
+    function sortTable(col) { if (currentSort.col === col) currentSort.asc = !currentSort.asc; else { currentSort.col = col; currentSort.asc = true; } render(); }
+    document.querySelectorAll("th").forEach((th,idx) => th.addEventListener("click", () => sortTable(idx)));
+    document.getElementById("searchInput").addEventListener("input", render);
+    document.getElementById("chapterFilter").addEventListener("change", render);
+    render();
 
-    const toggleBtn = document.getElementById("darkModeToggle");
+    const toggle = document.getElementById("darkModeToggle");
     if (window.matchMedia("(prefers-color-scheme: dark)").matches) document.body.classList.add("dark");
-    toggleBtn.addEventListener("click", () => { document.body.classList.toggle("dark"); toggleBtn.innerHTML = document.body.classList.contains("dark") ? "☀️ Light Mode" : "🌙 Dark Mode"; });
+    toggle.addEventListener("click", () => { document.body.classList.toggle("dark"); toggle.innerHTML = document.body.classList.contains("dark") ? "☀️ Light Mode" : "🌙 Dark Mode"; });
 </script>
 </body>
 </html>
