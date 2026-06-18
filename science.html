@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IGCSE Chemistry — Grade 9 Semester 2 Practice</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --surface2: #f1f0ed;
+    --border: #e2e0db;
+    --border2: #cac8c2;
+    --text: #1a1917;
+    --text2: #6b6963;
+    --text3: #9c9990;
+    --green: #1a7a56;
+    --green-bg: #e6f5ee;
+    --green-border: #6ec49a;
+    --red: #b83a2a;
+    --red-bg: #fdf0ee;
+    --red-border: #e8998f;
+    --blue: #1e5fa8;
+    --blue-bg: #eaf1fb;
+    --blue-border: #7aaee0;
+    --amber: #8a5a10;
+    --amber-bg: #fdf4e3;
+    --amber-border: #e8c06a;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .page-wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  /* Header */
+  .header { margin-bottom: 2rem; }
+  .header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .header h1 { font-size: 22px; font-weight: 600; color: var(--text); }
+  .header p { font-size: 13px; color: var(--text2); margin-top: 3px; }
+  .badge { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; background: var(--blue-bg); color: var(--blue); border: 0.5px solid var(--blue-border); white-space: nowrap; }
+
+  /* Stats */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1rem; }
+  .stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .stat-val { font-size: 26px; font-weight: 600; color: var(--text); line-height: 1; }
+  .stat-val.green { color: var(--green); }
+  .stat-val.red { color: var(--red); }
+  .stat-val.blue { color: var(--blue); }
+
+  /* Progress */
+  .progress-wrap { margin-bottom: 1.5rem; }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text3); margin-bottom: 6px; }
+  .progress-track { background: var(--surface2); border-radius: 4px; height: 7px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.4s ease; width: 0%; }
+
+  /* Score summary */
+  .score-summary { display: none; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+  .score-summary.visible { display: block; }
+  .score-summary h2 { font-size: 16px; font-weight: 600; margin-bottom: 0.5rem; }
+  .score-row { display: flex; gap: 2rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  .score-item { text-align: center; }
+  .score-item .big { font-size: 28px; font-weight: 700; }
+  .score-item .lbl { font-size: 12px; color: var(--text2); }
+  .grade-badge { display: inline-block; font-size: 18px; font-weight: 700; padding: 6px 20px; border-radius: var(--radius); margin-top: 0.75rem; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .tab { border: 0.5px solid var(--border2); border-radius: 20px; padding: 5px 14px; font-size: 13px; cursor: pointer; background: var(--surface); color: var(--text2); transition: all 0.15s; font-family: inherit; }
+  .tab:hover { border-color: var(--text3); color: var(--text); }
+  .tab.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+  /* Section label */
+  .section-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin: 1.75rem 0 0.75rem; padding-bottom: 6px; border-bottom: 0.5px solid var(--border); }
+  .section-label:first-child { margin-top: 0; }
+
+  /* Question card */
+  .q-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 0.75rem; box-shadow: var(--shadow); }
+  .q-card.answered-correct { border-color: var(--green-border); }
+  .q-card.answered-wrong { border-color: var(--red-border); }
+  .q-card.answered-short { border-color: var(--amber-border); }
+
+  .q-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; flex-wrap: wrap; }
+  .q-num { font-size: 12px; font-weight: 600; color: var(--text3); }
+  .q-type-tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+  .q-type-tag.mcq { background: var(--blue-bg); color: var(--blue); }
+  .q-type-tag.short { background: var(--amber-bg); color: var(--amber); }
+  .q-marks-tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: var(--surface2); color: var(--text2); margin-left: auto; }
+
+  .q-text { font-size: 15px; color: var(--text); line-height: 1.65; margin-bottom: 1rem; white-space: pre-wrap; }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 7px; margin-bottom: 0.5rem; }
+  .option-btn { display: flex; align-items: center; gap: 10px; padding: 9px 13px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; cursor: pointer; background: var(--surface); color: var(--text); text-align: left; transition: all 0.12s; line-height: 1.4; }
+  .option-btn:hover:not(:disabled) { border-color: var(--border2); background: var(--surface2); }
+  .option-btn:disabled { cursor: default; }
+  .option-btn.correct { background: var(--green-bg); border-color: var(--green-border); color: var(--green); font-weight: 500; }
+  .option-btn.wrong { background: var(--red-bg); border-color: var(--red-border); color: var(--red); }
+  .opt-letter { font-size: 12px; font-weight: 600; min-width: 20px; color: var(--text3); }
+  .option-btn.correct .opt-letter, .option-btn.wrong .opt-letter { color: inherit; }
+
+  /* Explanation / model answer box */
+  .answer-reveal { margin-top: 0.75rem; padding: 0.85rem 1rem; border-radius: var(--radius-sm); background: var(--green-bg); border-left: 3px solid var(--green); display: none; font-size: 13.5px; line-height: 1.65; }
+  .answer-reveal.visible { display: block; }
+  .answer-reveal strong { font-weight: 600; color: var(--green); }
+  .answer-reveal.amber { background: var(--amber-bg); border-left-color: var(--amber); }
+  .answer-reveal.amber strong { color: var(--amber); }
+
+  /* Short answer */
+  .short-input { width: 100%; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 9px 11px; font-size: 14px; font-family: inherit; color: var(--text); background: var(--surface); resize: vertical; min-height: 70px; margin-bottom: 8px; transition: border-color 0.15s; }
+  .short-input:focus { outline: none; border-color: var(--blue); }
+
+  /* Buttons */
+  .btn { border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 7px 15px; font-size: 13px; font-family: inherit; cursor: pointer; background: var(--surface); color: var(--text2); transition: all 0.12s; }
+  .btn:hover { background: var(--surface2); color: var(--text); }
+  .btn.primary { background: var(--text); color: #fff; border-color: var(--text); }
+  .btn.primary:hover { opacity: 0.88; }
+  .btn.green { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+  .btn.green:hover { background: #d0eddf; }
+
+  /* Action bar */
+  .action-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 0.5px solid var(--border); }
+
+  /* Result icon */
+  .result-icon { font-size: 16px; margin-left: auto; }
+
+  @media (max-width: 480px) {
+    .page-wrap { padding: 1.25rem 1rem 3rem; }
+    .header h1 { font-size: 18px; }
+    .stat-val { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <h1>IGCSE Chemistry — Grade 9 Semester 2</h1>
+        <p>55 practice questions &middot; Mixed multiple choice &amp; short answer</p>
+      </div>
+      <span class="badge">Cambridge IGCSE</span>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val" id="stat-total">55</div></div>
+    <div class="stat-card"><div class="stat-label">Answered</div><div class="stat-val blue" id="stat-answered">0</div></div>
+    <div class="stat-card"><div class="stat-label">Correct</div><div class="stat-val green" id="stat-correct">0</div></div>
+    <div class="stat-card"><div class="stat-label">Wrong</div><div class="stat-val red" id="stat-wrong">0</div></div>
+    <div class="stat-card"><div class="stat-label">MCQ score</div><div class="stat-val" id="stat-score">—</div></div>
+    <div class="stat-card"><div class="stat-label">Total marks</div><div class="stat-val" id="stat-marks">0 / 64</div></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-meta"><span id="prog-label">0 of 55 answered</span><span id="prog-pct">0%</span></div>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+  </div>
+
+  <div class="score-summary" id="score-summary">
+    <h2>🎉 Quiz complete!</h2>
+    <div class="score-row">
+      <div class="score-item"><div class="big green" id="sum-correct">0</div><div class="lbl">MCQ correct</div></div>
+      <div class="score-item"><div class="big red" id="sum-wrong">0</div><div class="lbl">MCQ wrong</div></div>
+      <div class="score-item"><div class="big blue" id="sum-mcq-score">—</div><div class="lbl">MCQ accuracy</div></div>
+      <div class="score-item"><div class="big" id="sum-marks">0/64</div><div class="lbl">Total marks earned</div></div>
+    </div>
+    <div id="sum-grade" class="grade-badge"></div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" onclick="showSection('all',this)">All (55)</button>
+    <button class="tab" onclick="showSection('atomic',this)">Atomic structure</button>
+    <button class="tab" onclick="showSection('bonding',this)">Bonding</button>
+    <button class="tab" onclick="showSection('reactions',this)">Reactions</button>
+    <button class="tab" onclick="showSection('acids',this)">Acids &amp; bases</button>
+    <button class="tab" onclick="showSection('energy',this)">Energy changes</button>
+    <button class="tab" onclick="showSection('periodic',this)">Periodic table</button>
+  </div>
+
+  <div id="q-container"></div>
+
+  <div class="action-bar">
+    <button class="btn" onclick="resetAll()">↺ Reset all</button>
+    <button class="btn" onclick="revealAll()">👁 Show all answers</button>
+    <button class="btn primary" onclick="checkFinished()">✓ Calculate my score</button>
+  </div>
+
+</div>
+
+<script>
+const QUESTIONS = [
+  {id:1,section:'atomic',type:'mcq',marks:1,text:'An atom has 17 protons and 18 neutrons. What is its mass number?',options:['17','18','35','36'],answer:2,explanation:'Mass number = protons + neutrons = 17 + 18 = 35.'},
+  {id:2,section:'atomic',type:'mcq',marks:1,text:'Which subatomic particle has a relative charge of −1?',options:['Proton','Neutron','Electron','Nucleus'],answer:2,explanation:'Electrons carry a charge of −1. Protons are +1, neutrons are 0.'},
+  {id:3,section:'atomic',type:'mcq',marks:1,text:'Two atoms are isotopes of the same element. Which statement is correct?',options:['Same mass number, different atomic number','Same number of neutrons, different protons','Same atomic number, different mass number','Same number of electrons and neutrons'],answer:2,explanation:'Isotopes have the same atomic number (same element) but different numbers of neutrons, giving different mass numbers.'},
+  {id:4,section:'atomic',type:'mcq',marks:1,text:'The electronic configuration of a calcium atom (Z = 20) is:',options:['2, 8, 8, 2','2, 8, 10','2, 8, 8, 1, 1','2, 10, 8'],answer:0,explanation:'Calcium fills shells: 2 in the first, 8 in the second, 8 in the third, 2 in the fourth = 2,8,8,2.'},
+  {id:5,section:'atomic',type:'mcq',marks:1,text:'Which of the following is the correct symbol for the ion formed when a sulfur atom gains 2 electrons?',options:['S²⁺','S⁺','S²⁻','S⁻'],answer:2,explanation:'Sulfur gains 2 electrons to achieve a stable octet, forming S²⁻.'},
+  {id:6,section:'atomic',type:'short',marks:3,text:'Define the term relative atomic mass. Chlorine has two isotopes: ³⁵Cl (75%) and ³⁷Cl (25%). Calculate the relative atomic mass of chlorine. Show your working.',answer:'Relative atomic mass is the weighted average mass of all isotopes of an element relative to 1/12 the mass of carbon-12.\nAr = (35 × 75 + 37 × 25) / 100 = (2625 + 925) / 100 = 35.5'},
+  {id:7,section:'atomic',type:'short',marks:2,text:'Explain why atoms of the same element always have the same atomic number but may have different mass numbers.',answer:'Atoms of the same element have the same number of protons (= atomic number), which defines the element. However, they may differ in the number of neutrons, giving different mass numbers (mass number = protons + neutrons). These are called isotopes.'},
+  {id:8,section:'atomic',type:'mcq',marks:1,text:'Which electron shell can hold a maximum of 8 electrons?',options:['First shell','Second shell','Third shell','Fourth shell'],answer:1,explanation:'The second shell holds a maximum of 8 electrons. The first holds 2.'},
+  {id:9,section:'atomic',type:'mcq',marks:1,text:'An ion has 10 electrons and 8 protons. What is its charge?',options:['2+','2−','1−','0'],answer:1,explanation:'The ion has 2 more electrons (negative) than protons (positive), so the charge is 2−.'},
+
+  {id:10,section:'bonding',type:'mcq',marks:1,text:'Which type of bonding involves the sharing of electron pairs between atoms?',options:['Ionic bonding','Metallic bonding','Covalent bonding','Hydrogen bonding'],answer:2,explanation:'Covalent bonding involves atoms sharing pairs of electrons to achieve stable configurations.'},
+  {id:11,section:'bonding',type:'mcq',marks:1,text:'What type of structure does sodium chloride (NaCl) form?',options:['Simple molecular','Giant covalent','Giant ionic lattice','Metallic lattice'],answer:2,explanation:'NaCl forms a giant ionic lattice — a regular 3D arrangement of Na⁺ and Cl⁻ ions held by strong electrostatic forces.'},
+  {id:12,section:'bonding',type:'mcq',marks:1,text:'Which property is shared by all ionic compounds?',options:['They conduct electricity when solid','They have low melting points','They dissolve in water','They conduct electricity when molten or dissolved'],answer:3,explanation:'Ionic compounds conduct electricity when molten or dissolved in water because the ions are free to move.'},
+  {id:13,section:'bonding',type:'mcq',marks:1,text:'A water molecule (H₂O) has how many bonding pairs of electrons around the oxygen?',options:['1','2','3','4'],answer:1,explanation:'Oxygen forms 2 covalent bonds (one with each H), giving 2 bonding pairs plus 2 lone pairs.'},
+  {id:14,section:'bonding',type:'mcq',marks:1,text:'Which of the following substances has a giant covalent structure?',options:['Carbon dioxide','Iodine','Silicon dioxide','Sodium chloride'],answer:2,explanation:'Silicon dioxide (SiO₂) is a giant covalent structure where every Si is bonded to 4 oxygen atoms in a 3D network.'},
+  {id:15,section:'bonding',type:'mcq',marks:1,text:'Why do simple covalent molecules have low melting points?',options:['They have weak covalent bonds','The molecules have no charge','There are only weak intermolecular forces between molecules','Their electrons are delocalised'],answer:2,explanation:'Simple molecules are held together by weak van der Waals (intermolecular) forces — only a little energy is needed to separate them.'},
+  {id:16,section:'bonding',type:'short',marks:3,text:'Draw a dot-and-cross diagram for a molecule of ammonia (NH₃). Indicate the lone pair on nitrogen.',answer:'Ammonia has nitrogen at the centre bonded to three hydrogen atoms. Each N–H bond consists of one electron from N and one from H (shown as dot and cross). Nitrogen has one lone pair (2 electrons) remaining. Total electron pairs around N = 4 (3 bonding + 1 lone pair). Bond angle ≈ 107°.'},
+  {id:17,section:'bonding',type:'short',marks:2,text:'Explain why diamond is very hard and has a very high melting point.',answer:'Diamond has a giant covalent structure in which each carbon atom is covalently bonded to four others in a tetrahedral arrangement. Breaking the structure requires breaking many strong covalent bonds, which needs a very large amount of energy. Hence diamond is extremely hard and has a very high melting point.'},
+  {id:18,section:'bonding',type:'mcq',marks:1,text:'Which statement about metallic bonding is correct?',options:['Metal ions repel the delocalised electrons','Positive metal ions are surrounded by a sea of delocalised electrons','Metal atoms share electrons in fixed pairs','Metal atoms lose electrons permanently'],answer:1,explanation:'In metallic bonding, positive metal ions are arranged in a lattice surrounded by a sea of delocalised (free-moving) electrons.'},
+  {id:19,section:'bonding',type:'mcq',marks:1,text:'Which of the following has the highest melting point?',options:['Methane','Sodium','Silicon dioxide','Iodine'],answer:2,explanation:'Silicon dioxide is a giant covalent structure with very strong covalent bonds throughout, giving the highest melting point.'},
+
+  {id:20,section:'reactions',type:'mcq',marks:1,text:'In the reaction: 2H₂ + O₂ → 2H₂O, what type of reaction is this?',options:['Decomposition','Displacement','Synthesis (combination)','Neutralisation'],answer:2,explanation:'Two simpler substances (H₂ and O₂) combine to form one product — a synthesis/combination reaction.'},
+  {id:21,section:'reactions',type:'mcq',marks:1,text:'What does a balanced chemical equation show that a word equation does not?',options:['The names of products','The colours of reactants','The ratio of moles of each substance','The state of the products'],answer:2,explanation:'A balanced equation shows the molar ratios (stoichiometry) of all reactants and products.'},
+  {id:22,section:'reactions',type:'mcq',marks:1,text:'Which of the following is NOT a sign that a chemical reaction has taken place?',options:['A colour change','A gas is produced','A change in temperature','A change in state due to heating'],answer:3,explanation:'A physical state change from heating (e.g. melting ice) is a physical change, not a chemical reaction.'},
+  {id:23,section:'reactions',type:'mcq',marks:1,text:'What is the mole ratio of H₂ to N₂ in the Haber process: N₂ + 3H₂ ⇌ 2NH₃?',options:['1:1','1:3','3:1','2:3'],answer:2,explanation:'From the balanced equation, 3 moles of H₂ react with 1 mole of N₂ — ratio H₂:N₂ = 3:1.'},
+  {id:24,section:'reactions',type:'mcq',marks:1,text:'Which of the following correctly represents the law of conservation of mass?',options:['Mass of products > mass of reactants','Mass of reactants = mass of products','Mass of reactants > mass of products','Mass depends on temperature'],answer:1,explanation:'In a closed system, mass is conserved — total mass of reactants equals total mass of products.'},
+  {id:25,section:'reactions',type:'short',marks:3,text:'Balance the following equation and identify the type of reaction:\nFe + HCl → FeCl₂ + H₂',answer:'Balanced: Fe + 2HCl → FeCl₂ + H₂\nType: This is a displacement reaction (single replacement) — iron displaces hydrogen from hydrochloric acid. It can also be classified as a redox reaction (Fe is oxidised, H is reduced).'},
+  {id:26,section:'reactions',type:'short',marks:2,text:'A student heats 10.0 g of calcium carbonate. After heating, the solid has a mass of 5.6 g. Identify the gas produced and explain why the mass decreased.',answer:'The gas produced is carbon dioxide (CO₂). Reaction: CaCO₃ → CaO + CO₂. Mass decreased because CO₂ gas is released and escapes from the container. The mass of solid remaining (CaO) is less than the original CaCO₃, but total mass is conserved if the CO₂ is included.'},
+  {id:27,section:'reactions',type:'mcq',marks:1,text:'In a redox reaction, the substance that is oxidised:',options:['Gains electrons','Gains oxygen','Loses electrons','Loses hydrogen'],answer:2,explanation:'Oxidation is the loss of electrons (OIL — Oxidation Is Loss).'},
+  {id:28,section:'reactions',type:'mcq',marks:1,text:'What type of reaction occurs when zinc reacts with copper sulfate solution?',options:['Neutralisation','Decomposition','Displacement','Precipitation'],answer:2,explanation:'A more reactive metal (Zn) displaces a less reactive metal (Cu) from its salt solution — a displacement reaction.'},
+  {id:29,section:'reactions',type:'mcq',marks:1,text:'Which of the following is a physical change?',options:['Iron rusting','Wood burning','Ice melting','Magnesium burning in oxygen'],answer:2,explanation:'Ice melting is a physical change — water changes state but no new substance is formed.'},
+
+  {id:30,section:'acids',type:'mcq',marks:1,text:'What is the pH of a neutral solution at 25°C?',options:['0','1','7','14'],answer:2,explanation:'Neutral solutions have pH 7. Below 7 is acidic; above 7 is alkaline.'},
+  {id:31,section:'acids',type:'mcq',marks:1,text:'Which of the following is a strong acid?',options:['Ethanoic acid','Citric acid','Hydrochloric acid','Carbonic acid'],answer:2,explanation:'Hydrochloric acid (HCl) is a strong acid — it fully dissociates in water. The others are weak acids.'},
+  {id:32,section:'acids',type:'mcq',marks:1,text:'What are the products of a neutralisation reaction between an acid and a metal hydroxide?',options:['Salt and water','Salt and carbon dioxide','Salt and hydrogen','Water and carbon dioxide'],answer:0,explanation:'Acid + alkali (metal hydroxide) → salt + water. This is neutralisation.'},
+  {id:33,section:'acids',type:'mcq',marks:1,text:'Which gas is produced when zinc reacts with dilute sulfuric acid?',options:['Oxygen','Carbon dioxide','Sulfur dioxide','Hydrogen'],answer:3,explanation:'Metals above hydrogen in the reactivity series react with dilute acids to produce hydrogen gas and a salt.'},
+  {id:34,section:'acids',type:'mcq',marks:1,text:'The indicator Universal Indicator turns red in a solution. What does this indicate?',options:['Strongly alkaline (pH 13–14)','Slightly alkaline (pH 8–9)','Neutral (pH 7)','Strongly acidic (pH 1–2)'],answer:3,explanation:'Universal Indicator is red in strongly acidic solutions (pH 1–2).'},
+  {id:35,section:'acids',type:'short',marks:3,text:'Write a balanced equation for the reaction of magnesium carbonate with dilute hydrochloric acid. Name all products.',answer:'MgCO₃ + 2HCl → MgCl₂ + H₂O + CO₂\nProducts: magnesium chloride (salt), water, and carbon dioxide gas.\nIonic equation: MgCO₃(s) + 2H⁺(aq) → Mg²⁺(aq) + H₂O(l) + CO₂(g)'},
+  {id:36,section:'acids',type:'short',marks:2,text:'Explain the difference between a strong acid and a concentrated acid. Give one example of each.',answer:'A strong acid fully dissociates into ions in water (e.g. HCl — hydrochloric acid). A weak acid only partially dissociates (e.g. CH₃COOH — ethanoic acid). Concentration refers to the amount of acid dissolved per unit volume — a strong acid can be dilute, and a weak acid can be concentrated.'},
+  {id:37,section:'acids',type:'mcq',marks:1,text:'Which salt is formed when sodium hydroxide reacts with nitric acid?',options:['Sodium chloride','Sodium nitrate','Sodium sulfate','Sodium carbonate'],answer:1,explanation:'NaOH + HNO₃ → NaNO₃ + H₂O. The salt formed is sodium nitrate.'},
+  {id:38,section:'acids',type:'mcq',marks:1,text:'A student tests a solution with litmus paper. The paper turns blue. The solution is:',options:['Acidic','Neutral','Alkaline','A salt solution'],answer:2,explanation:'Litmus turns blue in alkaline conditions and red in acidic conditions.'},
+  {id:39,section:'acids',type:'mcq',marks:1,text:'Which metal oxide reacts with sulfuric acid to form copper(II) sulfate?',options:['Iron(II) oxide','Zinc oxide','Copper(II) oxide','Magnesium oxide'],answer:2,explanation:'CuO + H₂SO₄ → CuSO₄ + H₂O. Copper(II) oxide is a base that reacts with sulfuric acid to form copper(II) sulfate.'},
+
+  {id:40,section:'energy',type:'mcq',marks:1,text:'Which term describes a reaction that releases energy to the surroundings?',options:['Endothermic','Exothermic','Catalytic','Reversible'],answer:1,explanation:'Exothermic reactions release energy (usually as heat) to the surroundings — temperature of surroundings increases.'},
+  {id:41,section:'energy',type:'mcq',marks:1,text:'The thermal decomposition of calcium carbonate is an example of which type of reaction?',options:['Exothermic','Endothermic','Neutralisation','Oxidation'],answer:1,explanation:'Thermal decomposition requires energy input (heat) — it is endothermic (energy is absorbed from the surroundings).'},
+  {id:42,section:'energy',type:'mcq',marks:1,text:'On an energy level diagram for an exothermic reaction, the products are:',options:['At a higher energy level than the reactants','At the same energy level as the reactants','At a lower energy level than the reactants','At a variable energy level'],answer:2,explanation:'In an exothermic reaction, energy is released — products have lower energy than reactants.'},
+  {id:43,section:'energy',type:'mcq',marks:1,text:'A student dissolves ammonium nitrate in water and the temperature falls. The dissolving process is:',options:['Exothermic','Endothermic','Neutral','Catalysed'],answer:1,explanation:'Temperature falls because the process absorbs heat from the surroundings — this is endothermic.'},
+  {id:44,section:'energy',type:'short',marks:3,text:'Sketch and label an energy level diagram for an endothermic reaction. Indicate: reactants, products, activation energy, and ΔH.',answer:'The diagram should show:\n• Reactants at a lower energy level on the left\n• Products at a higher energy level on the right\n• The activation energy hump above the products level (drawn as a curve)\n• ΔH is positive (+) — shown as an upward arrow from reactants to products energy level\n• Axes: y-axis = Energy, x-axis = Reaction progress'},
+  {id:45,section:'energy',type:'short',marks:2,text:'State what is meant by activation energy and explain how a catalyst lowers it.',answer:'Activation energy is the minimum energy required for a reaction to start (the energy needed to break bonds in the reactants to form the transition state). A catalyst provides an alternative reaction pathway with a lower activation energy, so more reactant molecules have sufficient energy to react at a given temperature. The catalyst itself is not consumed in the reaction.'},
+  {id:46,section:'energy',type:'mcq',marks:1,text:'Combustion of fuels is best described as:',options:['Endothermic and reversible','Exothermic and irreversible','Endothermic and irreversible','Exothermic and reversible'],answer:1,explanation:'Combustion releases energy (exothermic) and is generally not reversible under normal conditions.'},
+  {id:47,section:'energy',type:'mcq',marks:1,text:'If the activation energy of a reaction decreases, what happens to the rate of reaction?',options:['It decreases','It stays the same','It increases','It becomes zero'],answer:2,explanation:'Lower activation energy means more molecules have enough energy to react, so the rate increases.'},
+
+  {id:48,section:'periodic',type:'mcq',marks:1,text:'Elements in the same group of the periodic table have the same:',options:['Number of electron shells','Mass number','Number of electrons in their outer shell','Number of neutrons'],answer:2,explanation:'Elements in the same group have the same number of valence (outer shell) electrons, giving them similar chemical properties.'},
+  {id:49,section:'periodic',type:'mcq',marks:1,text:'Which of the following is a property of Group 1 (alkali metals)?',options:['High density','High melting point','React vigorously with water to produce hydrogen','Do not react with oxygen'],answer:2,explanation:'Group 1 metals react with water to form a metal hydroxide and hydrogen gas. They also have low melting points and low densities.'},
+  {id:50,section:'periodic',type:'mcq',marks:1,text:'Moving across Period 3 from left to right, the atomic radius generally:',options:['Increases','Decreases','Stays the same','First increases then decreases'],answer:1,explanation:'Across a period, nuclear charge increases while electrons are added to the same shell — greater attraction pulls electrons closer, decreasing atomic radius.'},
+  {id:51,section:'periodic',type:'mcq',marks:1,text:'Chlorine reacts with potassium bromide solution. What observation is made?',options:['No reaction occurs','A white precipitate forms','The solution turns orange/brown','A blue precipitate forms'],answer:2,explanation:'Chlorine (more reactive halogen) displaces bromide ions from solution, producing bromine — which gives the solution an orange/brown colour.'},
+  {id:52,section:'periodic',type:'mcq',marks:1,text:'Which group contains elements with a completely full outer electron shell?',options:['Group 1','Group 7','Group 0 (Noble gases)','Group 4'],answer:2,explanation:'Noble gases (Group 0) have full outer electron shells (8 electrons, except He with 2), making them very stable and unreactive.'},
+  {id:53,section:'periodic',type:'short',marks:3,text:'Describe the trend in reactivity down Group 7 (halogens). Explain this trend in terms of electronic structure.',answer:'Reactivity decreases down Group 7 (F > Cl > Br > I). As you go down the group, atoms have more electron shells, so the outer shell is further from the nucleus. The attraction of the nucleus for incoming electrons is weaker (more shielding from inner shells). Therefore it becomes harder to gain an electron, and reactivity decreases.'},
+  {id:54,section:'periodic',type:'short',marks:2,text:'Why do elements in the same group of the periodic table have similar chemical properties?',answer:'Elements in the same group have the same number of electrons in their outermost shell (valence electrons). Chemical reactions involve the gaining, losing, or sharing of outer electrons. Since atoms in the same group have the same number of valence electrons, they undergo the same type of reactions and form compounds with similar formulae.'},
+  {id:55,section:'periodic',type:'mcq',marks:1,text:'The element with atomic number 19 is in which period and group?',options:['Period 3, Group 1','Period 4, Group 1','Period 4, Group 2','Period 3, Group 2'],answer:1,explanation:'Z=19 is potassium. Configuration: 2,8,8,1. Four electron shells = Period 4. One valence electron = Group 1.'},
+];
+
+const SECTION_NAMES = {atomic:'Atomic structure',bonding:'Bonding',reactions:'Chemical reactions',acids:'Acids & bases',energy:'Energy changes',periodic:'Periodic table'};
+const TOTAL_MARKS = QUESTIONS.reduce((a,q) => a + q.marks, 0);
+const LETTERS = ['A','B','C','D'];
+
+let state = {};
+let currentSection = 'all';
+
+function getFiltered(section) {
+  return section === 'all' ? QUESTIONS : QUESTIONS.filter(q => q.section === section);
+}
+
+function render(section) {
+  const list = getFiltered(section);
+  const container = document.getElementById('q-container');
+  let html = '';
+  let lastSection = '';
+
+  list.forEach(q => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-label">${SECTION_NAMES[q.section]}</div>`;
+      lastSection = q.section;
+    }
+    const s = state[q.id] || {};
+    let cardClass = 'q-card';
+    if (s.done) {
+      if (q.type === 'mcq') cardClass += s.correct ? ' answered-correct' : ' answered-wrong';
+      else cardClass += ' answered-short';
+    }
+
+    html += `<div class="${cardClass}" id="qcard-${q.id}">
+      <div class="q-meta">
+        <span class="q-num">Q${q.id}</span>
+        <span class="q-type-tag ${q.type}">${q.type === 'mcq' ? 'Multiple choice' : 'Short answer'}</span>
+        <span class="q-marks-tag">${q.marks} mark${q.marks > 1 ? 's' : ''}</span>
+        ${s.done && q.type === 'mcq' ? `<span class="result-icon">${s.correct ? '✅' : '❌'}</span>` : ''}
+        ${s.done && q.type === 'short' ? `<span class="result-icon">📝</span>` : ''}
+      </div>
+      <div class="q-text">${q.text}</div>`;
+
+    if (q.type === 'mcq') {
+      html += `<div class="options">`;
+      q.options.forEach((opt, i) => {
+        let cls = 'option-btn';
+        if (s.done) {
+          if (i === q.answer) cls += ' correct';
+          else if (i === s.chosen) cls += ' wrong';
+        }
+        html += `<button class="${cls}" onclick="pickAnswer(${q.id},${i})" ${s.done ? 'disabled' : ''}>
+          <span class="opt-letter">${LETTERS[i]}</span>${opt}
+        </button>`;
+      });
+      html += `</div>`;
+      if (s.done) {
+        html += `<div class="answer-reveal visible"><strong>Explanation:</strong> ${q.explanation}</div>`;
+      }
+    } else {
+      html += `<textarea class="short-input" id="ta-${q.id}" placeholder="Write your answer here..." ${s.done ? 'readonly' : ''}>${s.text || ''}</textarea>
+        <button class="btn green" onclick="revealShort(${q.id})" ${s.done ? 'disabled style="opacity:0.5"' : ''}>Show model answer</button>
+        <div class="answer-reveal amber${s.done ? ' visible' : ''}" id="ar-${q.id}"><strong>Model answer:</strong><br>${q.answer.replace(/\n/g,'<br>')}</div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function pickAnswer(qid, chosen) {
+  const q = QUESTIONS.find(x => x.id === qid);
+  if (state[qid] && state[qid].done) return;
+  const correct = chosen === q.answer;
+  state[qid] = { done: true, chosen, correct };
+  updateStats();
+  render(currentSection);
+}
+
+function revealShort(qid) {
+  const ta = document.getElementById(`ta-${qid}`);
+  const text = ta ? ta.value : '';
+  state[qid] = { done: true, text, correct: false, shortRevealed: true };
+  updateStats();
+  render(currentSection);
+}
+
+function updateStats() {
+  const mcqDone = QUESTIONS.filter(q => q.type === 'mcq' && state[q.id] && state[q.id].done);
+  const correct = mcqDone.filter(q => state[q.id].correct).length;
+  const wrong = mcqDone.length - correct;
+  const totalAnswered = Object.keys(state).filter(k => state[k].done).length;
+
+  // marks: 1 per correct MCQ + assume short marks for revealed shorts (show max for revealed)
+  let marksEarned = correct;
+  QUESTIONS.filter(q => q.type === 'short' && state[q.id] && state[q.id].done).forEach(q => {
+    marksEarned += q.marks;
+  });
+
+  document.getElementById('stat-answered').textContent = totalAnswered;
+  document.getElementById('stat-correct').textContent = correct;
+  document.getElementById('stat-wrong').textContent = wrong;
+  document.getElementById('stat-score').textContent = mcqDone.length > 0 ? Math.round((correct / mcqDone.length) * 100) + '%' : '—';
+  document.getElementById('stat-marks').textContent = marksEarned + ' / ' + TOTAL_MARKS;
+
+  const pct = Math.round((totalAnswered / QUESTIONS.length) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = totalAnswered + ' of ' + QUESTIONS.length + ' answered';
+  document.getElementById('prog-pct').textContent = pct + '%';
+
+  if (totalAnswered === QUESTIONS.length) showSummary(correct, wrong, mcqDone.length, marksEarned);
+}
+
+function showSummary(correct, wrong, mcqTotal, marksEarned) {
+  const pct = mcqTotal > 0 ? Math.round((correct / mcqTotal) * 100) : 0;
+  document.getElementById('sum-correct').textContent = correct;
+  document.getElementById('sum-wrong').textContent = wrong;
+  document.getElementById('sum-mcq-score').textContent = pct + '%';
+  document.getElementById('sum-marks').textContent = marksEarned + '/' + TOTAL_MARKS;
+
+  let grade, gColor, gBg;
+  if (pct >= 90) { grade = 'A* — Outstanding!'; gColor = '#0d5e3f'; gBg = '#c8f0de'; }
+  else if (pct >= 80) { grade = 'A — Excellent!'; gColor = '#1a5a2a'; gBg = '#d6eedd'; }
+  else if (pct >= 70) { grade = 'B — Good'; gColor = '#1e4fa8'; gBg = '#ddeaf8'; }
+  else if (pct >= 60) { grade = 'C — Satisfactory'; gColor = '#7a5a10'; gBg = '#fcecd0'; }
+  else if (pct >= 50) { grade = 'D — Keep practising'; gColor = '#8a3a10'; gBg = '#fde0d0'; }
+  else { grade = 'U — More revision needed'; gColor = '#8a2020'; gBg = '#fdd4d4'; }
+
+  const el = document.getElementById('sum-grade');
+  el.textContent = grade;
+  el.style.color = gColor;
+  el.style.background = gBg;
+
+  document.getElementById('score-summary').classList.add('visible');
+  document.getElementById('score-summary').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function checkFinished() {
+  const totalAnswered = Object.keys(state).filter(k => state[k].done).length;
+  if (totalAnswered < QUESTIONS.length) {
+    const remaining = QUESTIONS.length - totalAnswered;
+    if (confirm(`You still have ${remaining} unanswered question(s). Reveal all remaining answers and calculate score?`)) {
+      revealAll();
+    }
+  } else {
+    const mcqDone = QUESTIONS.filter(q => q.type === 'mcq' && state[q.id] && state[q.id].done);
+    const correct = mcqDone.filter(q => state[q.id].correct).length;
+    const wrong = mcqDone.length - correct;
+    let marksEarned = correct;
+    QUESTIONS.filter(q => q.type === 'short' && state[q.id] && state[q.id].done).forEach(q => { marksEarned += q.marks; });
+    showSummary(correct, wrong, mcqDone.length, marksEarned);
+  }
+}
+
+function revealAll() {
+  QUESTIONS.forEach(q => {
+    if (!state[q.id] || !state[q.id].done) {
+      if (q.type === 'mcq') state[q.id] = { done: true, chosen: -1, correct: false };
+      else state[q.id] = { done: true, text: '', correct: false, shortRevealed: true };
+    }
+  });
+  updateStats();
+  render(currentSection);
+}
+
+function resetAll() {
+  if (!confirm('Reset all answers and start over?')) return;
+  state = {};
+  document.getElementById('score-summary').classList.remove('visible');
+  updateStats();
+  render(currentSection);
+}
+
+function showSection(section, btn) {
+  currentSection = section;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  render(section);
+}
+
+render('all');
+updateStats();
+</script>
+</body>
+</html>
