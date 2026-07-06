@@ -84,7 +84,7 @@
   }
   #clearBtn:hover { color: var(--accent); }
 
-  #classSelect {
+  .ctrl-select {
     font-family: 'DM Mono', monospace;
     font-size: 0.78rem;
     letter-spacing: 0.03em;
@@ -101,8 +101,9 @@
     background-position: right 0.75rem center;
     transition: border-color 0.2s;
   }
-  #classSelect:focus { border-color: var(--accent); }
-  #classSelect.has-value { border-color: var(--accent); color: var(--accent); }
+  .ctrl-select:focus { border-color: var(--accent); }
+  .ctrl-select.has-value { border-color: var(--accent); color: var(--accent); }
+  .ctrl-select[disabled] { opacity: 0.35; cursor: not-allowed; }
 
   .filter-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
   .pill {
@@ -219,9 +220,8 @@
     </svg>
   </div>
 
-  <select id="classSelect">
+  <select id="classSelect" class="ctrl-select">
     <option value="">All classes</option>
-    <option value="- Select Class-">- Select Class-</option>
     <option value="10 AL-FARABI">10 AL-FARABI</option>
     <option value="10 AL-GHAZALI">10 AL-GHAZALI</option>
     <option value="10 AL-RAZI">10 AL-RAZI</option>
@@ -246,6 +246,19 @@
     <option value="9 IBNU NAFIS">9 IBNU NAFIS</option>
   </select>
 
+  <select id="gradeSelect" class="ctrl-select" style="display:none;">
+    <option value="">All grades</option>
+    <option value="7">Grade 7</option>
+    <option value="8">Grade 8</option>
+    <option value="9">Grade 9</option>
+    <option value="10">Grade 10</option>
+    <option value="11">Grade 11</option>
+  </select>
+
+  <select id="subjectSelect" class="ctrl-select" style="display:none;">
+    <option value="">Choose a subject…</option>
+  </select>
+
   <div class="filter-group" id="filterGroup">
     <button class="pill active" data-status="">All</button>
     <button class="pill" data-status="ACTIVE">Has Grades</button>
@@ -256,6 +269,8 @@
     <button class="pill active" data-view="students">Students</button>
     <button class="pill" data-view="school">🏆 Whole School Rank</button>
     <button class="pill" data-view="classes">📊 Best Class</button>
+    <button class="pill" data-view="grade">🎓 Grade Rank</button>
+    <button class="pill" data-view="subject">📚 Subject Rank</button>
   </div>
 </div>
 
@@ -299,6 +314,8 @@ let currentQuery = '';
 let currentStatus = '';
 let currentClass = '';
 let currentView = 'students';
+let currentGrade = '';
+let currentSubject = '';
 
 function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 function escapeHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -319,8 +336,18 @@ function medalHtml(rank) {
 }
 
 function render() {
+  updateControlVisibility();
+
   if (currentView === 'classes') {
     renderClassRankings();
+    return;
+  }
+  if (currentView === 'grade') {
+    renderGradeRank();
+    return;
+  }
+  if (currentView === 'subject') {
+    renderSubjectRank();
     return;
   }
 
@@ -442,6 +469,220 @@ function render() {
       <td class="cell-class">${classText}</td>
       <td class="cell-status">${statusBadge}</td>
       <td class="cell-avg">${avg}</td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = rows.join('');
+}
+
+function updateControlVisibility() {
+  const gradeSel = document.getElementById('gradeSelect');
+  const subjSel = document.getElementById('subjectSelect');
+  const classSel = document.getElementById('classSelect');
+
+  gradeSel.style.display = (currentView === 'grade' || currentView === 'subject') ? 'block' : 'none';
+  subjSel.style.display = (currentView === 'subject') ? 'block' : 'none';
+  classSel.style.display = (currentView === 'grade') ? 'none' : 'block';
+
+  if (currentView === 'subject') {
+    populateSubjectOptions();
+  }
+}
+
+function studentsInGradeScope() {
+  // Uses currentGrade (and currentClass if set, as a further narrow) to build the student pool
+  return DATA.filter(r => {
+    if (!r['Class']) return false;
+    const gradeNum = r['Class'].split(' ')[0];
+    if (currentGrade && gradeNum !== currentGrade) return false;
+    if (currentClass && r['Class'] !== currentClass) return false;
+    return true;
+  });
+}
+
+function populateSubjectOptions() {
+  const subjSel = document.getElementById('subjectSelect');
+  const scope = studentsInGradeScope().filter(r => r['Status'] === 'ACTIVE');
+
+  const subjects = new Set();
+  scope.forEach(r => {
+    (r['Core'] || []).forEach(s => subjects.add(s.subject));
+    (r['Quran'] || []).forEach(s => subjects.add(s.subject));
+  });
+
+  const sorted = Array.from(subjects).sort();
+  const prevValue = currentSubject;
+
+  subjSel.innerHTML = '<option value="">Choose a subject…</option>' +
+    sorted.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+
+  if (sorted.includes(prevValue)) {
+    subjSel.value = prevValue;
+    currentSubject = prevValue;
+  } else {
+    currentSubject = '';
+    subjSel.value = '';
+  }
+}
+
+function renderGradeRank() {
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+  const badge = document.getElementById('countBadge');
+  const head = document.getElementById('tableHead');
+  const rankNote = document.getElementById('rankNote');
+
+  if (!currentGrade) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    document.getElementById('emptyMsg').textContent = 'Pick a grade above to see the ranking';
+    badge.textContent = `${DATA.length} students`;
+    badge.className = 'count-badge';
+    rankNote.className = 'rank-note';
+    head.innerHTML = `<th>Rank</th><th>ID</th><th>Name</th><th>Class</th><th>Status</th><th>Avg</th>`;
+    return;
+  }
+
+  const q = currentQuery.toUpperCase().trim();
+  let scope = studentsInGradeScope().filter(r => {
+    if (currentStatus && r['Status'] !== currentStatus) return false;
+    if (!q) return true;
+    return r['Name'].toUpperCase().includes(q) || r['ID'].toUpperCase().includes(q) || (r['Class'] || '').toUpperCase().includes(q);
+  });
+
+  scope = scope.slice().sort((a, b) => {
+    const aHas = a['Average'] !== null && a['Average'] !== undefined;
+    const bHas = b['Average'] !== null && b['Average'] !== undefined;
+    if (aHas && bHas) return b['Average'] - a['Average'];
+    if (aHas && !bHas) return -1;
+    if (!aHas && bHas) return 1;
+    return a['Name'].localeCompare(b['Name']);
+  });
+
+  head.innerHTML = `<th>Rank</th><th>ID</th><th>Name</th><th>Class</th><th>Status</th><th>Avg</th>`;
+
+  if (scope.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    document.getElementById('emptyMsg').textContent = `No match for "${currentQuery}"`;
+    badge.textContent = '0 students';
+    badge.className = 'count-badge';
+    rankNote.className = 'rank-note';
+    return;
+  }
+
+  empty.style.display = 'none';
+  badge.textContent = `${scope.length} students in Grade ${currentGrade}`;
+  badge.className = 'count-badge has-results';
+
+  const withMarks = scope.filter(r => r['Average'] !== null && r['Average'] !== undefined);
+  const top = withMarks[0];
+  rankNote.className = 'rank-note show';
+  rankNote.innerHTML = top
+    ? `Ranked by average mark across all of <b>Grade ${currentGrade}</b> · top scorer: <b>${escapeHtml(top['Name'])}</b> (${top['Average']}, ${escapeHtml(top['Class'])})`
+    : `No students with grades on record in Grade ${currentGrade}`;
+
+  let rankCounter = 0;
+  const rows = scope.map(r => {
+    const nameHighlighted = q && r['Name'].toUpperCase().includes(q) ? highlight(r['Name'], currentQuery) : escapeHtml(r['Name']);
+    const idHighlighted = q && r['ID'].toUpperCase().includes(q) ? highlight(r['ID'], currentQuery) : escapeHtml(r['ID']);
+    const classText = r['Class'] ? escapeHtml(r['Class']) : '—';
+    const statusBadge = r['Status'] === 'ACTIVE'
+      ? '<span class="badge badge-active">Has Grades</span>'
+      : '<span class="badge badge-graduated">Graduated</span>';
+    const hasAvg = r['Average'] !== null && r['Average'] !== undefined;
+    const avg = hasAvg ? r['Average'] : '<span style="color:var(--muted)">—</span>';
+
+    let rankCell, rowClass = '';
+    if (hasAvg) {
+      rankCounter += 1;
+      rankCell = medalHtml(rankCounter);
+      if (rankCounter <= 3) rowClass = `rank-${rankCounter}`;
+    } else {
+      rankCell = '<span style="color:var(--muted)">—</span>';
+    }
+
+    return `<tr data-id="${r['ID']}" class="${rowClass}">
+      <td>${rankCell}</td>
+      <td class="cell-id">${idHighlighted}</td>
+      <td class="cell-name">${nameHighlighted}</td>
+      <td class="cell-class">${classText}</td>
+      <td class="cell-status">${statusBadge}</td>
+      <td class="cell-avg">${avg}</td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = rows.join('');
+}
+
+function renderSubjectRank() {
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+  const badge = document.getElementById('countBadge');
+  const head = document.getElementById('tableHead');
+  const rankNote = document.getElementById('rankNote');
+
+  head.innerHTML = `<th>Rank</th><th>ID</th><th>Name</th><th>Class</th><th>Mark</th><th>Grade</th>`;
+
+  if (!currentSubject) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    document.getElementById('emptyMsg').textContent = currentGrade || currentClass
+      ? 'Pick a subject above to see the ranking'
+      : 'Pick a grade or class first, then a subject';
+    badge.textContent = `${DATA.length} students`;
+    badge.className = 'count-badge';
+    rankNote.className = 'rank-note';
+    return;
+  }
+
+  const q = currentQuery.toUpperCase().trim();
+  const scope = studentsInGradeScope().filter(r => r['Status'] === 'ACTIVE');
+
+  let entries = [];
+  scope.forEach(r => {
+    const all = [...(r['Core'] || []), ...(r['Quran'] || [])];
+    const hit = all.find(s => s.subject === currentSubject);
+    if (!hit) return;
+    const numeric = /^\d+(\.\d+)?$/.test(hit.mark);
+    if (!numeric) return;
+    if (q && !(r['Name'].toUpperCase().includes(q) || r['ID'].toUpperCase().includes(q) || (r['Class'] || '').toUpperCase().includes(q))) return;
+    entries.push({ r, mark: parseFloat(hit.mark), grade: hit.grade });
+  });
+
+  entries.sort((a, b) => b.mark - a.mark);
+
+  if (entries.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    document.getElementById('emptyMsg').textContent = `No students took ${currentSubject} in this scope`;
+    badge.textContent = '0 students';
+    badge.className = 'count-badge';
+    rankNote.className = 'rank-note';
+    return;
+  }
+
+  empty.style.display = 'none';
+  badge.textContent = `${entries.length} students`;
+  badge.className = 'count-badge has-results';
+
+  const top = entries[0];
+  const scopeLabel = currentClass ? escapeHtml(currentClass) : (currentGrade ? `Grade ${currentGrade}` : 'the whole school');
+  rankNote.className = 'rank-note show';
+  rankNote.innerHTML = `Ranked by <b>${escapeHtml(currentSubject)}</b> mark in <b>${scopeLabel}</b> · top scorer: <b>${escapeHtml(top.r['Name'])}</b> (${top.mark})`;
+
+  const rows = entries.map((e, idx) => {
+    const rank = idx + 1;
+    const rowClass = rank <= 3 ? `rank-${rank}` : '';
+    const nameHighlighted = q && e.r['Name'].toUpperCase().includes(q) ? highlight(e.r['Name'], currentQuery) : escapeHtml(e.r['Name']);
+    const idHighlighted = q && e.r['ID'].toUpperCase().includes(q) ? highlight(e.r['ID'], currentQuery) : escapeHtml(e.r['ID']);
+    return `<tr data-id="${e.r['ID']}" class="${rowClass}">
+      <td>${medalHtml(rank)}</td>
+      <td class="cell-id">${idHighlighted}</td>
+      <td class="cell-name">${nameHighlighted}</td>
+      <td class="cell-class">${escapeHtml(e.r['Class'])}</td>
+      <td class="cell-avg">${e.mark}</td>
+      <td class="${gradeClass(e.grade)}">${escapeHtml(e.grade)}</td>
     </tr>`;
   });
 
@@ -586,11 +827,23 @@ document.getElementById('filterGroup').addEventListener('click', e => {
 document.getElementById('classSelect').addEventListener('change', e => {
   currentClass = e.target.value;
   e.target.classList.toggle('has-value', !!currentClass);
-  if (currentClass && currentView !== 'students') {
+  if (currentClass && (currentView === 'school' || currentView === 'classes')) {
     currentView = 'students';
     document.querySelectorAll('#viewGroup .pill').forEach(p => p.classList.remove('active'));
     document.querySelector('#viewGroup .pill[data-view="students"]').classList.add('active');
   }
+  render();
+});
+
+document.getElementById('gradeSelect').addEventListener('change', e => {
+  currentGrade = e.target.value;
+  e.target.classList.toggle('has-value', !!currentGrade);
+  render();
+});
+
+document.getElementById('subjectSelect').addEventListener('change', e => {
+  currentSubject = e.target.value;
+  e.target.classList.toggle('has-value', !!currentSubject);
   render();
 });
 
@@ -600,6 +853,12 @@ document.getElementById('viewGroup').addEventListener('click', e => {
   document.querySelectorAll('#viewGroup .pill').forEach(p => p.classList.remove('active'));
   pill.classList.add('active');
   currentView = pill.dataset.view;
+  if (currentView === 'grade') {
+    currentClass = '';
+    const classSel = document.getElementById('classSelect');
+    classSel.value = '';
+    classSel.classList.remove('has-value');
+  }
   render();
 });
 
