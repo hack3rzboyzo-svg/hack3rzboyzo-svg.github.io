@@ -199,6 +199,46 @@
   .grade-E, .grade-F { color: #ff7070; }
 
   .modal-empty { color: var(--muted); font-size: 0.9rem; padding: 1rem 0; }
+
+  .compare-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+  }
+  .compare-card .cc-title {
+    font-weight: 800;
+    font-size: 1.05rem;
+    margin-bottom: 0.3rem;
+  }
+  .compare-card .cc-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .compare-card .cc-avg {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-top: 0.5rem;
+    color: var(--accent);
+  }
+  .winner-cell { color: var(--accent); font-weight: 700; }
+  .loser-cell { color: #888; }
+  .tie-cell { color: var(--text); }
+  .no-common-note {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+  }
 </style>
 </head>
 <body>
@@ -259,6 +299,17 @@
     <option value="">Choose a subject…</option>
   </select>
 
+  <select id="compareClassA" class="ctrl-select" style="display:none;">
+    <option value="">Class A…</option>
+  </select>
+  <select id="compareClassB" class="ctrl-select" style="display:none;">
+    <option value="">Class B…</option>
+  </select>
+
+  <input type="text" id="compareStudentA" class="ctrl-select" list="studentsDatalist" placeholder="Student A: name or ID…" style="display:none; width: 220px;" autocomplete="off">
+  <input type="text" id="compareStudentB" class="ctrl-select" list="studentsDatalist" placeholder="Student B: name or ID…" style="display:none; width: 220px;" autocomplete="off">
+  <datalist id="studentsDatalist"></datalist>
+
   <div class="filter-group" id="filterGroup">
     <button class="pill active" data-status="">All</button>
     <button class="pill" data-status="ACTIVE">Has Grades</button>
@@ -271,6 +322,8 @@
     <button class="pill" data-view="classes">📊 Best Class</button>
     <button class="pill" data-view="grade">🎓 Grade Rank</button>
     <button class="pill" data-view="subject">📚 Subject Rank</button>
+    <button class="pill" data-view="compareClasses">⚖️ Compare Classes</button>
+    <button class="pill" data-view="compareStudents">🆚 Compare Students</button>
   </div>
 </div>
 
@@ -279,6 +332,7 @@
 <div class="divider"></div>
 
 <div class="table-wrap">
+  <div class="compare-summary" id="compareSummary" style="display:none;"></div>
   <table>
     <thead>
       <tr id="tableHead">
@@ -316,6 +370,10 @@ let currentClass = '';
 let currentView = 'students';
 let currentGrade = '';
 let currentSubject = '';
+let compareClassA = '';
+let compareClassB = '';
+let compareStudentA = null;
+let compareStudentB = null;
 
 function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 function escapeHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -348,6 +406,14 @@ function render() {
   }
   if (currentView === 'subject') {
     renderSubjectRank();
+    return;
+  }
+  if (currentView === 'compareClasses') {
+    renderCompareClasses();
+    return;
+  }
+  if (currentView === 'compareStudents') {
+    renderCompareStudents();
     return;
   }
 
@@ -479,10 +545,24 @@ function updateControlVisibility() {
   const gradeSel = document.getElementById('gradeSelect');
   const subjSel = document.getElementById('subjectSelect');
   const classSel = document.getElementById('classSelect');
+  const compA = document.getElementById('compareClassA');
+  const compB = document.getElementById('compareClassB');
+  const stuA = document.getElementById('compareStudentA');
+  const stuB = document.getElementById('compareStudentB');
+  const compareSummary = document.getElementById('compareSummary');
+  const searchWrap = document.querySelector('.search-wrap');
+  const filterGroup = document.getElementById('filterGroup');
 
   gradeSel.style.display = (currentView === 'grade' || currentView === 'subject') ? 'block' : 'none';
   subjSel.style.display = (currentView === 'subject') ? 'block' : 'none';
-  classSel.style.display = (currentView === 'grade') ? 'none' : 'block';
+  classSel.style.display = (currentView === 'grade' || currentView === 'compareClasses' || currentView === 'compareStudents') ? 'none' : 'block';
+  compA.style.display = (currentView === 'compareClasses') ? 'block' : 'none';
+  compB.style.display = (currentView === 'compareClasses') ? 'block' : 'none';
+  stuA.style.display = (currentView === 'compareStudents') ? 'block' : 'none';
+  stuB.style.display = (currentView === 'compareStudents') ? 'block' : 'none';
+  compareSummary.style.display = (currentView === 'compareClasses' || currentView === 'compareStudents') ? 'grid' : 'none';
+  searchWrap.style.display = (currentView === 'compareClasses' || currentView === 'compareStudents') ? 'none' : 'block';
+  filterGroup.style.display = (currentView === 'compareClasses' || currentView === 'compareStudents') ? 'none' : 'flex';
 
   if (currentView === 'subject') {
     populateSubjectOptions();
@@ -689,6 +769,220 @@ function renderSubjectRank() {
   tbody.innerHTML = rows.join('');
 }
 
+function initCompareControls() {
+  const compA = document.getElementById('compareClassA');
+  const compB = document.getElementById('compareClassB');
+  const realClasses = CLASSES.filter(c => c !== '- Select Class-');
+  const classOptions = realClasses.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  compA.innerHTML = '<option value="">Class A…</option>' + classOptions;
+  compB.innerHTML = '<option value="">Class B…</option>' + classOptions;
+
+  const datalist = document.getElementById('studentsDatalist');
+  datalist.innerHTML = DATA
+    .filter(r => r['Status'] === 'ACTIVE')
+    .map(r => `<option value="${escapeHtml(r['Name'])} (${escapeHtml(r['ID'])})">`)
+    .join('');
+}
+
+function findStudentFromInput(value) {
+  if (!value) return null;
+  const m = value.match(/\(([^()]+)\)\s*$/);
+  if (m) {
+    const id = m[1].trim().toUpperCase();
+    const byId = DATA.find(r => r['ID'].toUpperCase() === id);
+    if (byId) return byId;
+  }
+  const q = value.trim().toUpperCase();
+  return DATA.find(r => r['ID'].toUpperCase() === q) ||
+         DATA.find(r => r['Name'].toUpperCase() === q) ||
+         DATA.find(r => r['Name'].toUpperCase().includes(q));
+}
+
+function gradeOfClass(cls) {
+  return cls ? cls.split(' ')[0] : '';
+}
+
+function classAverages(className) {
+  const students = DATA.filter(r => r['Class'] === className && r['Status'] === 'ACTIVE');
+  const subjectTotals = {};
+  students.forEach(r => {
+    (r['Core'] || []).forEach(s => {
+      if (!/^\d+(\.\d+)?$/.test(s.mark)) return;
+      if (!subjectTotals[s.subject]) subjectTotals[s.subject] = { total: 0, count: 0 };
+      subjectTotals[s.subject].total += parseFloat(s.mark);
+      subjectTotals[s.subject].count += 1;
+    });
+  });
+  const result = {};
+  Object.keys(subjectTotals).forEach(subj => {
+    result[subj] = Math.round((subjectTotals[subj].total / subjectTotals[subj].count) * 10) / 10;
+  });
+  return { averages: result, studentCount: students.length };
+}
+
+function renderCompareClasses() {
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+  const badge = document.getElementById('countBadge');
+  const head = document.getElementById('tableHead');
+  const rankNote = document.getElementById('rankNote');
+  const summary = document.getElementById('compareSummary');
+
+  head.innerHTML = `<th>Subject</th><th>${compareClassA ? escapeHtml(compareClassA) : 'Class A'}</th><th>${compareClassB ? escapeHtml(compareClassB) : 'Class B'}</th><th>Gap</th>`;
+
+  if (!compareClassA || !compareClassB) {
+    tbody.innerHTML = '';
+    summary.innerHTML = '';
+    empty.style.display = 'block';
+    document.getElementById('emptyMsg').textContent = 'Pick two classes above to compare';
+    badge.textContent = `${DATA.length} students`;
+    badge.className = 'count-badge';
+    rankNote.className = 'rank-note';
+    return;
+  }
+
+  const dataA = classAverages(compareClassA);
+  const dataB = classAverages(compareClassB);
+  const gradeA = gradeOfClass(compareClassA);
+  const gradeB = gradeOfClass(compareClassB);
+
+  const subjectsA = new Set(Object.keys(dataA.averages));
+  const subjectsB = new Set(Object.keys(dataB.averages));
+  const common = [...subjectsA].filter(s => subjectsB.has(s)).sort();
+
+  empty.style.display = 'none';
+  badge.textContent = `Comparing ${dataA.studentCount + dataB.studentCount} students`;
+  badge.className = 'count-badge has-results';
+
+  rankNote.className = 'rank-note show';
+  if (gradeA !== gradeB) {
+    rankNote.innerHTML = `Showing only subjects common to both classes (grade ${escapeHtml(gradeA)} vs grade ${escapeHtml(gradeB)} have different curricula) — ${common.length} shared subject${common.length === 1 ? '' : 's'}`;
+  } else {
+    rankNote.innerHTML = `Comparing <b>${escapeHtml(compareClassA)}</b> and <b>${escapeHtml(compareClassB)}</b> across ${common.length} shared subjects`;
+  }
+
+  const overallA = dataA.studentCount ? Math.round((Object.values(dataA.averages).reduce((a,b)=>a+b,0) / Object.keys(dataA.averages).length) * 10) / 10 : null;
+  const overallB = dataB.studentCount ? Math.round((Object.values(dataB.averages).reduce((a,b)=>a+b,0) / Object.keys(dataB.averages).length) * 10) / 10 : null;
+
+  summary.innerHTML = `
+    <div class="compare-card">
+      <div class="cc-title">${escapeHtml(compareClassA)}</div>
+      <div class="cc-meta">${dataA.studentCount} students with grades</div>
+      <div class="cc-avg">${overallA !== null ? overallA : '—'}</div>
+    </div>
+    <div class="compare-card">
+      <div class="cc-title">${escapeHtml(compareClassB)}</div>
+      <div class="cc-meta">${dataB.studentCount} students with grades</div>
+      <div class="cc-avg">${overallB !== null ? overallB : '—'}</div>
+    </div>
+  `;
+
+  if (common.length === 0) {
+    tbody.innerHTML = '';
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('emptyMsg').textContent = 'No shared subjects between these two classes';
+    return;
+  }
+
+  const rows = common.map(subj => {
+    const a = dataA.averages[subj];
+    const b = dataB.averages[subj];
+    const aClass = a > b ? 'winner-cell' : (a < b ? 'loser-cell' : 'tie-cell');
+    const bClass = b > a ? 'winner-cell' : (b < a ? 'loser-cell' : 'tie-cell');
+    const gap = Math.round((a - b) * 10) / 10;
+    return `<tr style="cursor:default;">
+      <td class="cell-name">${escapeHtml(subj)}</td>
+      <td class="cell-avg ${aClass}">${a}</td>
+      <td class="cell-avg ${bClass}">${b}</td>
+      <td class="cell-avg">${gap > 0 ? '+' : ''}${gap}</td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = rows.join('');
+}
+
+function renderCompareStudents() {
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+  const badge = document.getElementById('countBadge');
+  const head = document.getElementById('tableHead');
+  const rankNote = document.getElementById('rankNote');
+  const summary = document.getElementById('compareSummary');
+
+  const studentA = findStudentFromInput(document.getElementById('compareStudentA').value);
+  const studentB = findStudentFromInput(document.getElementById('compareStudentB').value);
+
+  head.innerHTML = `<th>Subject</th><th>${studentA ? escapeHtml(studentA['Name']) : 'Student A'}</th><th>${studentB ? escapeHtml(studentB['Name']) : 'Student B'}</th><th>Gap</th>`;
+
+  if (!studentA || !studentB) {
+    tbody.innerHTML = '';
+    summary.innerHTML = '';
+    empty.style.display = 'block';
+    document.getElementById('emptyMsg').textContent = 'Pick two students above to compare';
+    badge.textContent = `${DATA.length} students`;
+    badge.className = 'count-badge';
+    rankNote.className = 'rank-note';
+    return;
+  }
+
+  const gradeA = gradeOfClass(studentA['Class']);
+  const gradeB = gradeOfClass(studentB['Class']);
+
+  const subjMapA = {};
+  (studentA['Core'] || []).forEach(s => { if (/^\d+(\.\d+)?$/.test(s.mark)) subjMapA[s.subject] = { mark: parseFloat(s.mark), grade: s.grade }; });
+  const subjMapB = {};
+  (studentB['Core'] || []).forEach(s => { if (/^\d+(\.\d+)?$/.test(s.mark)) subjMapB[s.subject] = { mark: parseFloat(s.mark), grade: s.grade }; });
+
+  const common = Object.keys(subjMapA).filter(s => subjMapB.hasOwnProperty(s)).sort();
+
+  empty.style.display = 'none';
+  badge.textContent = `Comparing 2 students`;
+  badge.className = 'count-badge has-results';
+
+  rankNote.className = 'rank-note show';
+  if (gradeA !== gradeB) {
+    rankNote.innerHTML = `Showing only subjects both students share (grade ${escapeHtml(gradeA)} vs grade ${escapeHtml(gradeB)} have different curricula) — ${common.length} shared subject${common.length === 1 ? '' : 's'}`;
+  } else {
+    rankNote.innerHTML = `Comparing <b>${escapeHtml(studentA['Name'])}</b> and <b>${escapeHtml(studentB['Name'])}</b> across ${common.length} shared subjects`;
+  }
+
+  summary.innerHTML = `
+    <div class="compare-card">
+      <div class="cc-title">${escapeHtml(studentA['Name'])}</div>
+      <div class="cc-meta">${escapeHtml(studentA['ID'])} · ${escapeHtml(studentA['Class'] || 'no class')}</div>
+      <div class="cc-avg">${studentA['Average'] !== null ? studentA['Average'] : '—'}</div>
+    </div>
+    <div class="compare-card">
+      <div class="cc-title">${escapeHtml(studentB['Name'])}</div>
+      <div class="cc-meta">${escapeHtml(studentB['ID'])} · ${escapeHtml(studentB['Class'] || 'no class')}</div>
+      <div class="cc-avg">${studentB['Average'] !== null ? studentB['Average'] : '—'}</div>
+    </div>
+  `;
+
+  if (common.length === 0) {
+    tbody.innerHTML = '';
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('emptyMsg').textContent = 'No shared subjects between these two students';
+    return;
+  }
+
+  const rows = common.map(subj => {
+    const a = subjMapA[subj].mark;
+    const b = subjMapB[subj].mark;
+    const aClass = a > b ? 'winner-cell' : (a < b ? 'loser-cell' : 'tie-cell');
+    const bClass = b > a ? 'winner-cell' : (b < a ? 'loser-cell' : 'tie-cell');
+    const gap = Math.round((a - b) * 10) / 10;
+    return `<tr style="cursor:default;">
+      <td class="cell-name">${escapeHtml(subj)}</td>
+      <td class="cell-avg ${aClass}">${a} <span style="color:var(--muted); font-size:0.75rem;">(${escapeHtml(subjMapA[subj].grade)})</span></td>
+      <td class="cell-avg ${bClass}">${b} <span style="color:var(--muted); font-size:0.75rem;">(${escapeHtml(subjMapB[subj].grade)})</span></td>
+      <td class="cell-avg">${gap > 0 ? '+' : ''}${gap}</td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = rows.join('');
+}
+
 function renderClassRankings() {
   const tbody = document.getElementById('tableBody');
   const empty = document.getElementById('emptyState');
@@ -862,6 +1156,22 @@ document.getElementById('viewGroup').addEventListener('click', e => {
   render();
 });
 
+document.getElementById('compareClassA').addEventListener('change', e => {
+  compareClassA = e.target.value;
+  e.target.classList.toggle('has-value', !!compareClassA);
+  render();
+});
+
+document.getElementById('compareClassB').addEventListener('change', e => {
+  compareClassB = e.target.value;
+  e.target.classList.toggle('has-value', !!compareClassB);
+  render();
+});
+
+document.getElementById('compareStudentA').addEventListener('input', () => render());
+document.getElementById('compareStudentB').addEventListener('input', () => render());
+
+initCompareControls();
 render();
 </script>
 </body>
