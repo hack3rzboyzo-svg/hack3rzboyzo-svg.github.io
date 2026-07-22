@@ -1,32 +1,8 @@
 #!/bin/bash
 # =============================================================================
-# WiFi Backup Script - Version 1.0
+# WiFi Backup Script - Version 2.0
 # Author: Mikail
 # Repository: https://github.com/hack3rzboyzo-svg/hack3rzboyzo-svg.github.io
-# =============================================================================
-
-# Your WiFi backup script content here (the one I provided earlier)
-# Make sure to include all the functions and logic
-
-# Display warning
-echo "⚠️  WARNING: You are about to backup WiFi passwords"
-echo "This script will save passwords locally on your system"
-echo "Make sure you trust this source before continuing"
-echo ""
-read -p "Continue? (y/N) " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Aborted."
-    exit 1
-fi
-
-# Your existing WiFi backup code here
-#!/bin/bash
-# =============================================================================
-# Script Name: wifi_backup.sh
-# Description: Backup all WiFi passwords, SSIDs, and connection profiles
-# Author: Your Name
-# Version: 2.0
 # =============================================================================
 
 # Exit on error, undefined variables, and pipe failures
@@ -83,6 +59,21 @@ check_root() {
         exit 1
     else
         log_success "Running as root user"
+    fi
+}
+
+# Display warning and get confirmation
+confirm_backup() {
+    echo ""
+    echo -e "${YELLOW}⚠️  WARNING: You are about to backup WiFi passwords${NC}"
+    echo "This script will save passwords locally on your system"
+    echo -e "${YELLOW}Make sure you trust this source before continuing${NC}"
+    echo ""
+    read -p "Continue? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Aborted."
+        exit 0
     fi
 }
 
@@ -193,7 +184,7 @@ backup_nmcli() {
     echo "" >> "$nmcli_backup"
     
     # Get all connections
-    local connections=$(nmcli -t -f NAME,TYPE connection show | grep -i "802-11-wireless" | cut -d':' -f1)
+    local connections=$(nmcli -t -f NAME,TYPE connection show | grep -i "802-11-wireless" | cut -d':' -f1 || true)
     
     if [[ -z "$connections" ]]; then
         log_warning "No WiFi connections found in nmcli"
@@ -508,8 +499,20 @@ EOF
 # =============================================================================
 
 main() {
+    # Show header
+    echo -e "${CYAN}========================================${NC}"
+    echo -e "${CYAN}  WIFI PASSWORD BACKUP UTILITY${NC}"
+    echo -e "${CYAN}========================================${NC}"
+    echo "Running as: $(whoami)"
+    echo "Date: $(date)"
+    echo "Host: $(hostname)"
+    echo -e "${CYAN}========================================${NC}"
+    
     # Check if running as root
     check_root
+    
+    # Display warning and get confirmation
+    confirm_backup
     
     # Check dependencies
     check_dependencies
@@ -553,15 +556,6 @@ main() {
                 ;;
         esac
     done
-    
-    # Show header
-    echo -e "${CYAN}========================================${NC}"
-    echo -e "${CYAN}  WIFI PASSWORD BACKUP UTILITY${NC}"
-    echo -e "${CYAN}========================================${NC}"
-    echo "Running as: $(whoami)"
-    echo "Date: $(date)"
-    echo "Host: $(hostname)"
-    echo -e "${CYAN}========================================${NC}"
     
     # Create backup directory
     create_backup_dir
