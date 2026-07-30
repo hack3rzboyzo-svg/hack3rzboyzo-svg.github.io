@@ -1,0 +1,768 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Roster</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1f1f1f;
+    --border: #2a2a2a;
+    --accent: #c8f53a;
+    --text: #e8e8e8;
+    --muted: #666;
+    --highlight-bg: #c8f53a;
+    --highlight-text: #000;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 2.5rem 2.5rem 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .brand { display: flex; flex-direction: column; gap: 0.25rem; }
+  .brand-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.15em; color: var(--accent); text-transform: uppercase; }
+  .brand-title { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+  .brand-title span { color: var(--accent); }
+
+  .count-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    align-self: center;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .count-badge.has-results { color: var(--accent); border-color: var(--accent); }
+
+  .controls { padding: 2rem 2.5rem 1.25rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+  .search-wrap { flex: 1; min-width: 220px; position: relative; }
+  .search-wrap svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; transition: color 0.2s; }
+
+  #searchInput {
+    width: 100%;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1rem 0.85rem 2.75rem;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  #searchInput::placeholder { color: var(--muted); }
+  #searchInput:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(200,245,58,0.1); }
+  #searchInput:focus + svg, .search-wrap:focus-within svg { color: var(--accent); }
+
+  #clearBtn {
+    position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    font-size: 1.1rem; line-height: 1; padding: 0.2rem; display: none; transition: color 0.15s;
+  }
+  #clearBtn:hover { color: var(--accent); }
+
+  .ctrl-select {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 2.25rem 0.85rem 1rem;
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    transition: border-color 0.2s;
+  }
+  .ctrl-select:focus { border-color: var(--accent); }
+  .ctrl-select.has-value { border-color: var(--accent); color: var(--accent); }
+
+  .filter-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .pill {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.05em;
+    padding: 0.4rem 0.85rem; border-radius: 100px; border: 1.5px solid var(--border);
+    background: var(--surface); color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .pill:hover { border-color: #444; color: var(--text); }
+  .pill.active { border-color: var(--accent); background: rgba(200,245,58,0.08); color: var(--accent); }
+
+  .divider { height: 1px; background: var(--border); margin: 0 2.5rem; }
+  .table-wrap { padding: 1.5rem 2.5rem 3rem; overflow-x: auto; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.875rem; }
+
+  thead th {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); padding: 0 1rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  thead th:first-child { padding-left: 0.5rem; }
+
+  tbody tr { transition: background 0.12s; }
+  tbody tr:hover { background: var(--surface2); }
+
+  tbody td { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(42,42,42,0.5); vertical-align: middle; max-width: 0; }
+  tbody td:first-child { padding-left: 0.5rem; font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--muted); width: 50px; }
+
+  .cell-id { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: #aaa; width: 90px; white-space: nowrap; }
+  .cell-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 200px; max-width: 360px; }
+  .cell-class { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: #aaa; white-space: nowrap; width: 140px; }
+  .cell-status { width: 150px; }
+
+  .badge { display: inline-block; font-size: 0.7rem; font-family: 'DM Mono', monospace; letter-spacing: 0.04em; padding: 0.2rem 0.6rem; border-radius: 100px; white-space: nowrap; }
+  .badge-logged  { background: rgba(200,245,58,0.12); color: var(--accent); border: 1px solid rgba(200,245,58,0.25); }
+  .badge-notlogged  { background: rgba(100,100,100,0.12); color: #888; border: 1px solid rgba(100,100,100,0.25); }
+
+  mark { background: var(--highlight-bg); color: var(--highlight-text); border-radius: 2px; padding: 0 1px; font-weight: 700; }
+
+  .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); display: none; }
+  .empty-state svg { margin-bottom: 1rem; opacity: 0.3; }
+  .empty-state p { font-size: 1.1rem; margin-bottom: 0.4rem; }
+  .empty-state small { font-size: 0.8rem; font-family: 'DM Mono', monospace; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #444; }
+
+  .name-not-logged { color: var(--muted); font-style: italic; }
+  .class-not-logged { color: var(--muted); font-style: italic; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-eyebrow">Student Records</span>
+    <h1 class="brand-title">Roster <span>List</span></h1>
+  </div>
+  <div class="count-badge" id="countBadge">Loading...</div>
+</header>
+
+<div class="controls">
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Search by name, ID, class…" autocomplete="off" spellcheck="false">
+    <button id="clearBtn" title="Clear search">✕</button>
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+  </div>
+
+  <select id="classSelect" class="ctrl-select">
+    <option value="">All classes</option>
+  </select>
+
+  <div class="filter-group" id="filterGroup">
+    <button class="pill active" data-status="">All</button>
+    <button class="pill" data-status="LOGGED">Has Name</button>
+    <button class="pill" data-status="NOTLOGGED">Not Logged</button>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Class</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <div class="empty-state" id="emptyState">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+    <p>No students found</p>
+    <small id="emptyMsg">Try a different search term</small>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STUDENT DATA — all IDs from your list.
+// Names that are blank or "Name" → "Not logged"
+// Classes that are blank or start with "/" → "Not logged"
+// ============================================================
+const RAW_DATA = [
+{ id: "IS3154", name: "YASRIYA TUNGLAMAE", cls: "11 AL-RAZI / 2026" },
+{ id: "IS3162", name: "AFIQ HAZIQ BIN AB AZIZ", cls: "11 AL-RAZI / 2026" },
+{ id: "IS3163", name: "Adam bin Zulhilmi Amir", cls: "11 AL-GHAZALI / 2026" },
+{ id: "IS3164", name: "Aariz bin Zulhilmi Amir", cls: "11 AL-FARABI / 2026" },
+{ id: "IS3165", name: "RAISYA NABILLA PUTERI AZHARI", cls: "11 AL-FARABI / 2026" },
+{ id: "IS3168", name: "WAI YAN LIN", cls: "11 AL-FARABI / 2026" },
+{ id: "IS3169", name: "zain mubah mohamad zaki", cls: "11 IBNU NAFIS / 2026" },
+{ id: "IS3170", name: "SYANIKA QUISTINA SYARIFUDDIN", cls: "11 AL-GHAZALI / 2026" },
+{ id: "IS3174", name: "YUMNU ALI SAEED", cls: "11 AL-GHAZALI / 2026" },
+{ id: "IS3175", name: "ACHRAF CHTAIBI", cls: "11 AL-GHAZALI / 2026" },
+{ id: "IS3178", name: "Nooh Ahmed", cls: "11 AL-FARABI / 2026" },
+{ id: "IS3179", name: "Muhammad Hariz Izzat Bin Mohd Tarmizi", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3180", name: "Afrah Shumaisah", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3181", name: "MOHAMED SAAIL SHAHEED", cls: "11 AL-FARABI / 2026" },
+{ id: "IS3183", name: "Afiq Danial Mohd Bakri", cls: "11 AL-RAZI / 2026" },
+{ id: "IS3186", name: "MARAH SAFIA JALAL", cls: "11 AL-GHAZALI / 2026" },
+{ id: "IS3187", name: "Sarah Kamila Mosadeq", cls: "11 AL-FARABI / 2026" },
+{ id: "IS3188", name: "ALYA BT ADNAN", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3189", name: "Jihad Jasmay bin Juzaili", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3191", name: "PRABU HISYAM ATQA MOCHAMAD AMIRUDIN", cls: "11 AL-FARABI / 2026" },
+{ id: "IS3192", name: "Syed Bazil Ali Salman", cls: "11 IBNU NAFIS / 2026" },
+{ id: "IS3193", name: "Rayyan Hykel bin Rozarizan", cls: "11 AL-GHAZALI / 2026" },
+{ id: "IS3194", name: "AYSHA SARAKHAN SAGHIR ABBAS", cls: "11 AL-RAZI / 2026" },
+{ id: "IS3195", name: "Aishath Zaara Jamsheed Ali", cls: "11 AL-GHAZALI / 2026" },
+{ id: "IS3198", name: "ARISSA QAIREEN BINTI MOHD ZAKRI", cls: "11 IBNU NAFIS / 2026" },
+{ id: "IS3200", name: "LATIFA OZAY", cls: "11 AL-GHAZALI / 2026" },
+{ id: "IS3203", name: "MAHIN IBNE RAHMAN", cls: "11 AL-RAZI / 2026" },
+{ id: "IS3205", name: "ALEESYA RAIHANAH BINTI ILIYAS", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3207", name: "Muhammad Ibad Niaz", cls: "11 IBNU NAFIS / 2026" },
+{ id: "IS3212", name: "SHEZA MISHAEL BINTI ZAIREE SHAM", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3214", name: "AHMED MOHAMED ABDALLA MOHAMEDELKHAIR", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3222", name: "SOFIA FARHANA SHAMIM RAHMAN", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3224", name: "AZMAIN KARIM REZAYAN", cls: "11 AL-FARABI / 2026" },
+{ id: "IS3227", name: "ZAREEF YUSOF BIN IDRIS", cls: "11 IBNU NAFIS / 2026" },
+{ id: "IS3230", name: "AMMAR ADAM MIKHAEL BIN MD RADZI", cls: "11 AL-GHAZALI / 2026" },
+{ id: "IS3250", name: "ARISHA FAYEZ", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3251", name: "ASHIQ MUHAMMAD BIN MOHAMED FAIZAL", cls: "11 IBNU NAFIS / 2026" },
+{ id: "IS3262", name: "DING CHUANCI", cls: "11 IBNU NAFIS / 2026" },
+{ id: "IS3263", name: "AHAMED SHAWKETH ARHAB ZAINUDEEN", cls: "11 AL-GHAZALI / 2026" },
+{ id: "IS3268", name: "MIA ARISSA BINTI ZAMRI", cls: "11 IBNU NAFIS / 2026" },
+{ id: "IS3269", name: "ADAM FIRHAN BIN ABDUL MU'IZZZ", cls: "11 AL-FARABI / 2026" },
+{ id: "IS3273", name: "FARAH RANIA SABRINA BINTI FAIZAL", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3274", name: "LAARAIB TARIQ", cls: "11 AL-RAZI / 2026" },
+{ id: "IS3293", name: "NATASYA WONG BINTI KHAIRI WONG", cls: "10 AL-RAZI / 2026" },
+{ id: "IS3299", name: "HTET NADI KYAW", cls: "10 AL-GHAZALI / 2026" },
+{ id: "IS3300", name: "TAFANNUM KARIM ZARRIN", cls: "10 AL-FARABI / 2026" },
+{ id: "IS3302", name: "MAHNUR RAHMAN", cls: "10 AL-FARABI / 2026" },
+{ id: "IS3303", name: "NOOR FATIHAH", cls: "10 IBNU KHALDUN / 2026" },
+{ id: "IS3305", name: "MASUDUR RAHMAN", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3306", name: "KANG JIAYI", cls: "10 AL-GHAZALI / 2026" },
+{ id: "IS3309", name: "SHAHZAIB PATEL", cls: "10 IBNU KHALDUN / 2026" },
+{ id: "IS3310", name: "Jazra Hani binti Kamarul Baharain", cls: "10 AL-GHAZALI / 2026" },
+{ id: "IS3312", name: "NASTARAN GHAREH CHELOO", cls: "10 AL-GHAZALI / 2026" },
+{ id: "IS3314", name: "ZAYNEB HRAIRI", cls: "10 AL-FARABI / 2026" },
+{ id: "IS3316", name: "MUHAMMAD EZZANI BIN MUHAMMAD SAIFULLIZAN", cls: "10 AL-GHAZALI / 2026" },
+{ id: "IS3318", name: "EL DELARA SAFEERAH BINTI MOHAMAD SUKOR", cls: "10 AL-RAZI / 2026" },
+{ id: "IS3320", name: "Niha Zafirah Binti Haja Maideen", cls: "10 IBNU KHALDUN / 2026" },
+{ id: "IS3322", name: "IBRAHIM MATOGU PASARIBU", cls: "10 AL-GHAZALI / 2026" },
+{ id: "IS3323", name: "MUHAMMAD SYAUQI HASIBUAN", cls: "10 IBNU KHALDUN / 2026" },
+{ id: "IS3325", name: "ARIYAN HOSSAIN", cls: "10 IBNU KHALDUN / 2026" },
+{ id: "IS3327", name: "Muhammad Al Firaas Qayyuum", cls: "10 IBNU KHALDUN / 2026" },
+{ id: "IS3328", name: "NUR NABILA SOFEA BINTI MUBARAK HUSSAIN", cls: "10 AL-GHAZALI / 2026" },
+{ id: "IS3329", name: "YASEMIN ABDELAZIZ ALI EID", cls: "/ 2026" },
+{ id: "IS3337", name: "MA QIANWEN", cls: "10 AL-RAZI / 2026" },
+{ id: "IS3338", name: "ANSAR BIN SYUKUR", cls: "10 AL-GHAZALI / 2026" },
+{ id: "IS3342", name: "SUBAITAH ZUNAINAH", cls: "10 AL-GHAZALI / 2026" },
+{ id: "IS3346", name: "HTET NADI PHWAY", cls: "10 IBNU KHALDUN / 2026" },
+{ id: "IS3350", name: "NAQIYYA HADINA HASIBUAN", cls: "11 AL-FARABI / 2026" },
+{ id: "IS3352", name: "MOSAMMAD NOWSHIN NAHAR HOQUE", cls: "10 IBNU KHALDUN / 2026" },
+{ id: "IS3355", name: "ZHAO XINLEI", cls: "11 AL-GHAZALI / 2026" },
+{ id: "IS3357", name: "MUHAMMAD YAHYA ASAD CHAUDHARY", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3358", name: "JANTIMA PONSODA", cls: "10 AL-RAZI / 2026" },
+{ id: "IS3372", name: "MARYAM AL-KAZAKHI", cls: "10 AL-RAZI / 2026" },
+{ id: "IS3402", name: "ALISHA AZMI", cls: "11 AL-RAZI / 2026" },
+{ id: "IS3431", name: "TASNEEM ALAENA HUMAIRAH BT MOHD AZLAN", cls: "10 AL-GHAZALI / 2026" },
+{ id: "IS3461", name: "SYIFA’ BINTI ABDUL AZIZ", cls: "10 AL-GHAZALI / 2026" },
+{ id: "IS3484", name: "WANG YUZE", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3486", name: "AWAIS AHMED", cls: "11 AL-RAZI / 2026" },
+{ id: "IS3495", name: "HE JIAXIN", cls: "11 AL-RAZI / 2026" },
+{ id: "IS3503", name: "MOHAMMAD MAHIN HOSSAIN", cls: "11 IBNU NAFIS / 2026" },
+{ id: "IS3507", name: "MAHJABEEN MONIR MUNTAHA", cls: "10 IBNU KHALDUN / 2026" },
+{ id: "IS3514", name: "ASADULLAH AL RAHAT", cls: "10 AL-FARABI / 2026" },
+{ id: "IS3544", name: "NURFARISYA MAISARA BINTI AHMAD FARIZ", cls: "10 AL-GHAZALI / 2026" },
+{ id: "IS3569", name: "MISS PICHCHAPA KUNRID", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3574", name: "MASTER MUAZ SAI", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3590", name: "ISMAIL AHMED ABSHIR", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3597", name: "EAINT MYAT MOE", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3598", name: "SHAH ZACHARIAH BIN SHAH ZARAK KHAN", cls: "9 IBNU KHALDUN / 2026" },
+{ id: "IS3604", name: "FATIMAH AZ-ZAHRA BINTI KHAIRUL AZIZI", cls: "10 AL-GHAZALI / 2026" },
+{ id: "IS3615", name: "THANT ZAYAR LIN", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3616", name: "SAN MYINT THU", cls: "10 AL-FARABI / 2026" },
+{ id: "IS3617", name: "RAFIF FARRAS MAHARDIKA", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3619", name: "MA HAOZHE", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3620", name: "MA MUXINYAN", cls: "11 IBNU KHALDUN / 2026" },
+{ id: "IS3632", name: "Azat Ayyub Abdylas", cls: "8 AL-RAZI / 2026" },
+{ id: "IS3633", name: "MUHAMMAD HADIF RAYYAN BIN MUHAMMAD HAZWAN", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3643", name: "LAIBA UMAR SHAIKH", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3649", name: "BAI HAIYI", cls: "9 AL-FARABI / 2026" },
+{ id: "IS3650", name: "ZAVIERA FARRENDIENA MUSLIADI", cls: "10 IBNU KHALDUN / 2026" },
+{ id: "IS3653", name: "MA XIAOREN", cls: "10 AL-RAZI / 2026" },
+{ id: "IS3658", name: "AMIRA KHADAR MOHAMED", cls: "11 AL-RAZI / 2026" },
+{ id: "IS3659", name: "YASMINE KHADAR MOHAMED", cls: "9 IBNU KHALDUN / 2026" },
+{ id: "IS3660", name: "ANDREA ARETHA", cls: "9 IBNU KHALDUN / 2026" },
+{ id: "IS3662", name: "DEANDRA RAJNI BASILKA", cls: "11 AL-RAZI / 2026" },
+{ id: "IS3664", name: "MUHAMMAD ARYAN YOUSUF", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3665", name: "AFFIQAH RAIHANAH BINTI ILIYAS", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3669", name: "ZARA SHAFEEQA BINTI BADLI AZIM", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3672", name: "AIZA AHMED", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3673", name: "MARIAM ISMAIL HUSSEIN AMZAT", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3675", name: "HUD HUSSEIN FARID HUSSEIN", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3676", name: "AFIQ HAFIY BIN AB AZIZ", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3680", name: "MUHAMMAD MAHAD FARRUKH", cls: "9 IBNU KHALDUN / 2026" },
+{ id: "IS3682", name: "MUHAMMAD YUSUF SIDDIQUI", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3684", name: "ZAITHOON ZOHA MUSADIQ", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3685", name: "MUHRIZ BIN SYUKUR", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3687", name: "Wrd Safia Jalal", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3689", name: "NOOR AZRA SOFIA BT NORASRI", cls: "9 IBNU KHALDUN / 2026" },
+{ id: "IS3690", name: "MUHAMMAD HAISAM TAHIR", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3692", name: "Nur Amira Binti Mohammed Aynul Quzzat", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3693", name: "Aishath Sibaa Shaheed", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3694", name: "Mior Aiman Bin Mior Azri", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3695", name: "Batrisyia Puteri Pasaribu", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3697", name: "PUTERA SETH OMAR BIN PUTERA MOHAMAD", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3698", name: "Moneeb Soualhi", cls: "9 IBNU KHALDUN / 2026" },
+{ id: "IS3699", name: "AHMAD QUSHAIRIE BIN NURULHADI", cls: "9 IBNU KHALDUN / 2026" },
+{ id: "IS3700", name: "Aiden Aazim Bin Bambang Gunawan", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3702", name: "LIN HTET NAING HTUN", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3703", name: "Alisha Hasna Rudiana", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3704", name: "AROFA AFREEN", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3705", name: "MUHAMMAD AL IMAN BIN MOHD SUHAIMI", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3706", name: "Safiya Ashurova", cls: "9 IBNU KHALDUN / 2026" },
+{ id: "IS3707", name: "NOOR MALIHA", cls: "9 IBNU KHALDUN / 2026" },
+{ id: "IS3708", name: "Zara mubah mohamad zaki", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3709", name: "AQILAH AFZAN BINTI MOHD HARDI", cls: "9 AL-RAZI / 2026" },
+{ id: "IS3710", name: "NUHA ADEENA BINTI MOHAMED SUFFIAN", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3711", name: "KAUNG KIN SOE", cls: "9 IBNU KHALDUN / 2026" },
+{ id: "IS3714", name: "ADNAN SHEHU", cls: "9 IBNU KHALDUN / 2026" },
+{ id: "IS3715", name: "Heba Akram", cls: "9 AL-GHAZALI / 2026" },
+{ id: "IS3716", name: "Siti Sophia Ryanti Ganado", cls: "9 IBNU KHALDUN / 2026" },
+{ id: "IS3717", name: "Huzaifa Yasin Gunawan", cls: "9 AL-GHAZALI / 2026" },
+  { id: "IS3720", name: "MUHAMMAD IBRAHEEM BIN MOHAMED ALI", cls: "11 AL-GHAZALI / 2026" },
+  { id: "IS3721", name: "YANG LUYU", cls: "11 AL-GHAZALI / 2026" },
+  { id: "IS3723", name: "Nur Husna Binti Amir Shah", cls: "11 IBNU KHALDUN / 2026" },
+  { id: "IS3728", name: "AYAAN MUHAMMAD SHAKAIB", cls: "9 AL-GHAZALI / 2026" },
+  { id: "IS3738", name: "ZOHA FATIMA", cls: "10 IBNU KHALDUN / 2026" },
+  { id: "IS3739", name: "ABDUL RAHMAN KHAN", cls: "10 IBNU KHALDUN / 2026" },
+  { id: "IS3740", name: "WANIA SUKABNA", cls: "11 IBNU NAFIS / 2026" },
+  { id: "IS3743", name: "SHAN HAOZE", cls: "9 AL-GHAZALI / 2026" },
+  { id: "IS3749", name: "BAI RUIXI", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS3757", name: "AMINA CHANDA", cls: "11 IBNU KHALDUN / 2026" },
+  { id: "IS3758", name: "NA HONGBOANG", cls: "10 AL-GHAZALI / 2026" },
+  { id: "IS3760", name: "ZUKHRUF ALAMIN", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS3761", name: "HADIF IKHWAN HANAFI BIN ABDULLAH", cls: "9 AL-RAZI / 2026" },
+  { id: "IS3766", name: "MUHAMMAD HAKIMI BIN IZANI", cls: "11 IBNU KHALDUN / 2026" },
+  { id: "IS3767", name: "MARYAM FAYE", cls: "11 IBNU NAFIS / 2026" },
+  { id: "IS3772", name: "MUHAMMAD IZZUL AQSHA", cls: "11 AL-GHAZALI / 2026" },
+  { id: "IS3776", name: "GU TIANYA", cls: "11 IBNU NAFIS / 2026" },
+  { id: "IS3784", name: "WANG ZIJIE", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS3786", name: "XIAN ZHAO CHEN", cls: "11 AL-FARABI / 2026" },
+  { id: "IS3792", name: "MA ZHONGZHENG", cls: "11 AL-RAZI / 2026" },
+  { id: "IS3793", name: "ZAINAB AUWAL ADAM", cls: "9 AL-RAZI / 2026" },
+  { id: "IS3797", name: "MA LIYA", cls: "10 AL-GHAZALI / 2026" },
+  { id: "IS3798", name: "ZAINAL AALI ZAFRAN BIN ABDUL RAHIM", cls: "11 AL-RAZI / 2026" },
+  { id: "IS3800", name: "MA JIAYI", cls: "11 AL-FARABI / 2026" },
+  { id: "IS3801", name: "AHMAD SODIQ HANANIA BIN MOHAMAD YAZID LIM", cls: "/ 2026" },
+  { id: "IS3802", name: "AHMAD HAZIQ HANANIA BIN MOHAMAD YAZID LIM", cls: "/ 2026" },
+  { id: "IS3803", name: "SU YAJINGNAN", cls: "11 AL-RAZI / 2026" },
+  { id: "IS3805", name: "LI BOXUAN", cls: "11 IBNU KHALDUN / 2026" },
+  { id: "IS3809", name: "NUR AMALIN SYAKIERA BINTI MUSTAFA", cls: "9 AL-GHAZALI / 2026" },
+  { id: "IS3810", name: "KHALIS AQIL BIN KHAIRUL ANUAR", cls: "9 AL-RAZI / 2026" },
+  { id: "IS3815", name: "MA XINYI", cls: "10 AL-RAZI / 2026" },
+  { id: "IS3818", name: "ZHOU LEMAN", cls: "10 AL-RAZI / 2026" },
+  { id: "IS3823", name: "SAFIYYAH HUSNA BINTI MOHAMMAD ARIF", cls: "9 AL-RAZI / 2026" },
+  { id: "IS3825", name: "LI AO", cls: "11 AL-FARABI / 2026" },
+  { id: "IS3830", name: "MA YOURAN", cls: "10 AL-GHAZALI / 2026" },
+  { id: "IS3831", name: "HUI ZIXIN", cls: "9 AL-FARABI / 2026" },
+  { id: "IS3833", name: "MA TIANZE", cls: "10 AL-FARABI / 2026" },
+  { id: "IS3840", name: "PUTERA MAHMUD KHAN BIN FAZIL KHAN", cls: "11 AL-GHAZALI / 2026" },
+  { id: "IS3841", name: "ZAID HASSAN ELMI ABDUL", cls: "11 AL-FARABI / 2026" },
+  { id: "IS3859", name: "AFRA KASHIF", cls: "11 AL-RAZI / 2026" },
+  { id: "IS3860", name: "MA PENGBO", cls: "11 IBNU NAFIS / 2026" },
+  { id: "IS3877", name: "PANUS SOHIRUN", cls: "10 AL-FARABI / 2026" },
+  { id: "IS3881", name: "MD RAHEL", cls: "11 AL-RAZI / 2026" },
+  { id: "IS3897", name: "SHIREEN NYLA BINTI TAJUL ARIFFIN", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS3898", name: "NIELA ARAYA PUTRI", cls: "11 AL-FARABI / 2026" },
+  { id: "IS3901", name: "MD DIDAR HOSSAIN FARDIN", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS3902", name: "MA SHIQI", cls: "11 AL-FARABI / 2026" },
+  { id: "IS3904", name: "SHE KEXIN", cls: "11 AL-GHAZALI / 2026" },
+  { id: "IS3905", name: "LIU JUNHAI", cls: "9 AL-FARABI / 2026" },
+  { id: "IS3919", name: "PUTERI BIBI SAKINAH BINTI FAZIL KHAN", cls: "9 AL-GHAZALI / 2026" },
+  { id: "IS3935", name: "Omera Nurqeisha Binti Dato Mohd Taufik", cls: "9 AL-RAZI / 2026" },
+  { id: "IS4004", name: "ARKAN NASR AZADANI", cls: "11 AL-GHAZALI / 2026" },
+  { id: "IS4005", name: "RAKHA DANISH ALFARISI HARDYAWAN", cls: "11 AL-FARABI / 2026" },
+  { id: "IS4007", name: "ZHAO JINGYU", cls: "11 AL-RAZI / 2026" },
+  { id: "IS4008", name: "MASTER SOFFAN SAE", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4009", name: "SHEIKH ZAREEF BIN KHALID", cls: "10 AL-RAZI / 2026" },
+  { id: "IS4010", name: "JIN ZICHEN", cls: "11 AL-RAZI / 2026" },
+  { id: "IS4014", name: "QUEENSHA ALIMAH HENNA", cls: "11 AL-GHAZALI / 2026" },
+  { id: "IS4017", name: "NUTSAREE PATIMIN", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4021", name: "ORAKARN RUAM-AIEM", cls: "9 AL-FARABI / 2026" },
+  { id: "IS4026", name: "AMANI BINTI ARIEF", cls: "11 AL-GHAZALI / 2026" },
+  { id: "IS4040", name: "STORMY DAANISH NOORMANSHAH", cls: "11 AL-FARABI / 2026" },
+  { id: "IS4045", name: "ARIANNA MARIE HAMIDI", cls: "11 AL-GHAZALI / 2026" },
+  { id: "IS4058", name: "MA YICHEN", cls: "/ 2026" },
+  { id: "IS4061", name: "MUHAMMAD AIMAR AL KAUTSAR", cls: "10 IBNU KHALDUN / 2026" },
+  { id: "IS4062", name: "MD REZOAN HOQUE MAHID", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4063", name: "YASEEN WALEED HASSAN OMER AHMED", cls: "/ 2026" },
+  { id: "IS4064", name: "ZAARA BINTE SAZZAD", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS4065", name: "MD ISRAK AMIN ROHAN", cls: "9 AL-FARABI / 2026" },
+  { id: "IS4066", name: "MI YIKAI", cls: "10 IBNU KHALDUN / 2026" },
+  { id: "IS4067", name: "MUHAMMAD ZIHNI YUSOF", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4080", name: "AMANDA WONG BINTI KHAIRI WONG", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4081", name: "Syabil Sulaiman Mosadeq", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4092", name: "IRFAN RIFA'IE BIN MOHD ROSDI", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS4094", name: "MYSHA MAHEERAH BINTI MD ZAMRI", cls: "11 IBNU NAFIS / 2026" },
+  { id: "IS4095", name: "MALIK ADILYA", cls: "11 AL-GHAZALI / 2026" },
+  { id: "IS4105", name: "MA JIAN", cls: "9 AL-GHAZALI / 2026" },
+  { id: "IS4108", name: "CHERISSE MAZAYA HERAWAN", cls: "10 AL-RAZI / 2026" },
+  { id: "IS4109", name: "UWAIS ESCANDAR BIN MOHD SYAFIRUL", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS4119", name: "waria islam", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4132", name: "MA RUOYAN", cls: "10 AL-GHAZALI / 2026" },
+  { id: "IS4133", name: "MA QIANYUAN", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS4134", name: "KAOTHAR ADEJOKE BUSARI", cls: "11 AL-RAZI / 2026" },
+  { id: "IS4135", name: "Muhammad Rizq Bin Dato Mohd Taufik", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4147", name: "ABDUNNOUR AL-KAZAKHI", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4148", name: "MUHAMMAD MUNEEB MAQSOOD", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4149", name: "Qistina Aleesha Fatini Binti Zul Emran", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4150", name: "ILHAN BINTI SHAIFUL HELMI", cls: "10 AL-GHAZALI / 2026" },
+  { id: "IS4151", name: "LI RUNLIN", cls: "/ 2026" },
+  { id: "IS4152", name: "MOE MAN", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4154", name: "MYAT THU MAUNG", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4155", name: "Nufael Hadef Bin Mohamed Suffian", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4159", name: "RAMIA LAMHA", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4160", name: "AFIQ HAZIM BIN AB AZIZ", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4161", name: "ARSH RANA BIN FERHAN IRSHAD", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4162", name: "Ayden Aariz Bin Ezanee", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4163", name: "ESHAN FAAZ BIN FAIZAL", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4165", name: "MUHAMMAD BILAL KHAN SAGHIR ABBAS SARAKHAN", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4166", name: "AFNAN NUR ATIFA", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4167", name: "Inaaya Salman", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4168", name: "Khayla Eryna binti Khairul Azwan", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4169", name: "MAWADAH ADEL MOHAMMED BA HAMID", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4170", name: "Nur Amani Binti Muhamad Razly", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4171", name: "HARITH LANGIT ARZA", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4172", name: "AFNAN CHENU", cls: "11 IBNU NAFIS / 2026" },
+  { id: "IS4174", name: "YASEEN ALAM", cls: "/ 2026" },
+  { id: "IS4175", name: "YAHYA ALAM", cls: "9 AL-GHAZALI / 2026" },
+  { id: "IS4176", name: "MASTER ANAWIN SOMWANG", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4177", name: "WEI ZIYI", cls: "11 AL-GHAZALI / 2026" },
+  { id: "IS4178", name: "WEI XIANG", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4179", name: "WEI QIANG", cls: "/ 2026" },
+  { id: "IS4182", name: "JANA HUMAIRA BINTI HAMDAN", cls: "9 AL-RAZI / 2026" },
+  { id: "IS4185", name: "MALIK KHABIBMUKHAMMAD", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4187", name: "SYAIMA BINTI MOHAMMED HASSAN", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4188", name: "HTET ARKAR PHONE NAING", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4189", name: "Muhammad Qaed Aqeel Bin Muhammad Nazrul", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4191", name: "SYED MUHSIN ALBAR BIN SYED JAAFAR", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4192", name: "VIE ZAALIA BINTI IDRIS", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4210", name: "NUR AMNA SYAMIMI BINTI MOHD AZREN", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS4212", name: "LA SHAOQING", cls: "/ 2026" },
+  { id: "IS4213", name: "PUTERI ZARA AISYA BINTI MEGAT FAREZ ZUHAIRIN", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS4215", name: "MEGAT ZEKE RAFAEL BIN MEGAT FAREZ ZUHAIRIN", cls: "11 IBNU KHALDUN / 2026" },
+  { id: "IS4216", name: "HOZAIFA SAIFAN WASEY", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4218", name: "Egan Ali Saeed", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4219", name: "SAFIYA ZAHRA BINTI MOHAMMAD AHMAD", cls: "/ 2026" },
+  { id: "IS4220", name: "SAFIYA NUR", cls: "11 AL-FARABI / 2026" },
+  { id: "IS4225", name: "SHI JINGYI", cls: "9 AL-FARABI / 2026" },
+  { id: "IS4226", name: "MA CHENXI", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4227", name: "WANG JUNXI", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4228", name: "ALYA ADRIANA BINTI ANUAR", cls: "11 AL-FARABI / 2026" },
+  { id: "IS4229", name: "UMME HABIBA", cls: "10 AL-RAZI / 2026" },
+  { id: "IS4230", name: "FARIHA BINTI ROHAIZA", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4233", name: "ABDURRAKHIM SERIK", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4235", name: "FILIP ALIF RAFEE MARINESCU", cls: "/ 2026" },
+  { id: "IS4236", name: "YE JINNA", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4237", name: "YE YUXIN", cls: "10 AL-GHAZALI / 2026" },
+  { id: "IS4238", name: "MA ANRAN", cls: "10 AL-RAZI / 2026" },
+  { id: "IS4240", name: "MA ANDI", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4241", name: "MAI JIAMAN", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4242", name: "LIU CHE", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4244", name: "LIU LIAN", cls: "10 IBNU KHALDUN / 2026" },
+  { id: "IS4245", name: "MA FENGXIA", cls: "10 AL-RAZI / 2026" },
+  { id: "IS4249", name: "MA HEDIYA", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4250", name: "AZRAF BIN ALAM", cls: "/ 2026" },
+  { id: "IS4252", name: "MARYAM MAYESA BT FADLI", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4253", name: "MA XUHANG", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4255", name: "LI CONGHUI", cls: "9 AL-FARABI / 2026" },
+  { id: "IS4256", name: "LIU HAIYUE", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS4267", name: "MA SITAN", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4268", name: "MA ANYU", cls: "10 AL-GHAZALI / 2026" },
+  { id: "IS4269", name: "MA KE", cls: "9 AL-FARABI / 2026" },
+  { id: "IS4270", name: "MA TIANXIANG", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4271", name: "ORNJIRA THABTHIM", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4273", name: "MA YU", cls: "9 AL-FARABI / 2026" },
+  { id: "IS4278", name: "MA MINGZE", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4279", name: "WANG MINGZE", cls: "11 AL-GHAZALI / 2026" },
+  { id: "IS4282", name: "YANG YAXUAN", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4283", name: "MIRSAD NAQIB", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4284", name: "NOSHIN TASNIM", cls: "9 AL-RAZI / 2026" },
+  { id: "IS4285", name: "MARAM MOHAMED IBRAHIM NEGASI", cls: "10 IBNU KHALDUN / 2026" },
+  { id: "IS4286", name: "MD MARUF MIA", cls: "/ 2026" },
+  { id: "IS4289", name: "DAN YIXUAN", cls: "/ 2026" },
+  { id: "IS4290", name: "MASTER SULAIMAN KACHEY", cls: "10 IBNU KHALDUN / 2026" },
+  { id: "IS4293", name: "MOHAMED ALI ABDULHAMID MOHAMED ALI", cls: "9 AL-GHAZALI / 2026" },
+  { id: "IS4295", name: "MA ZIYAO", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4296", name: "MA HAOYU", cls: "/ 2026" },
+  { id: "IS4297", name: "LI RUI", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4298", name: "PU ENQI", cls: "/ 2026" },
+  { id: "IS4299", name: "MA WENHAO", cls: "/ 2026" },
+  { id: "IS4300", name: "NA HAOCHEN", cls: "10 AL-GHAZALI / 2026" },
+  { id: "IS4301", name: "SHAN HAOZE", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4302", name: "MA HAONAN", cls: "/ 2026" },
+  { id: "IS4306", name: "MA HONGBO", cls: "11 IBNU KHALDUN / 2026" },
+  { id: "IS4308", name: "CUI YUNXI", cls: "10 AL-RAZI / 2026" },
+  { id: "IS4309", name: "ABDULLAH HABEEBULLAH ZAKARIYAH", cls: "9 AL-GHAZALI / 2026" },
+  { id: "IS4311", name: "MA WENYI", cls: "10 AL-RAZI / 2026" },
+  { id: "IS4314", name: "SONG ZIHAN", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4317", name: "WEI HAONAN", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4319", name: "JANNATUL FERDOUS", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4321", name: "HABIBA", cls: "8 AL-GHAZALI / 2026" },
+  { id: "IS4323", name: "BAI YAHAN", cls: "11 AL-FARABI / 2026" },
+  { id: "IS4330", name: "MUHAMMAD UMAR BIN AHMAD ZULFADLI", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4332", name: "ANISHA GHULAM", cls: "/ 2026" },
+  { id: "IS4335", name: "MA LIYA", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4336", name: "MA BIAO", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4337", name: "MA BIAO", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4338", name: "WANG DINGDONG", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4339", name: "ALISA MAISARAH BINTI ALI ASHRAF", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4340", name: "JIBRAIL JACOB", cls: "10 IBNU KHALDUN / 2026" },
+  { id: "IS4341", name: "AZRAIL JACOB", cls: "8 AL-RAZI / 2026" },
+  { id: "IS4342", name: "MA BINLIANG", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4343", name: "MA BINYI", cls: "10 IBNU KHALDUN / 2026" },
+  { id: "IS4344", name: "AIZERE ATABAY", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4346", name: "MA YIJIE", cls: "10 AL-RAZI / 2026" },
+  { id: "IS4352", name: "MUHAMMAD KENZIE AR RASYID", cls: "10 IBNU KHALDUN / 2026" },
+  { id: "IS4353", name: "MUHAMMAD AL FATEH HUSIN BIN JOHARI", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4366", name: "SYED UMAR ALATTAS BIN SYED REZA HELMY AL-ATTAS", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4368", name: "ZARITH SAKINA BINTI ZAIMI", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4369", name: "ZARA SAFIYA BINTI ZAIMI", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4370", name: "ZAHIRAH SORFINA ZAIMI", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS4375", name: "AYISHA SIDDIQA BINTI RAHMAN", cls: "/ 2026" },
+  { id: "IS4379", name: "AISYAH ARIANNA BINTI RIZAL SHAHRIMAN", cls: "10 AL-GHAZALI / 2026" },
+  { id: "IS4380", name: "XIAO JINXUAN", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS4382", name: "NUR FAIQAH ADNI BINTI AZMAN", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4385", name: "NABIL KHANDAKAR RODEL", cls: "9 AL-GHAZALI / 2026" },
+  { id: "IS4386", name: "MUHAMMAD ALLIRFAN BIN MOHD HILMAN", cls: "10 AL-RAZI / 2026" },
+  { id: "IS4387", name: "MUHAMMAD ALLFIRAS BIN MOHD HILMAN", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4388", name: "IQWAN NUR IMAN BIN MOHD EFENDI", cls: "10 AL-RAZI / 2026" },
+  { id: "IS4391", name: "MUHAMMAD ANIQ HAZIQ BIN MOHD. AMIRUL FAREZ", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4392", name: "NU'MAN HAFIZ BIN AHMAD FIRDAUS", cls: "9 AL-RAZI / 2026" },
+  { id: "IS4394", name: "MA MINGHUI", cls: "/ 2026" },
+  { id: "IS4395", name: "MD MAHMUDUL ISLAM", cls: "/ 2026" },
+  { id: "IS4401", name: "MUHAMMAD MUJAHID BIN SHAKIB @ MUHAMMAD SHAKIB", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4405", name: "ALISYA PUTRI BALQIS BINTI ABDULLAH", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4409", name: "ARYAN ZAKWAN BIN AHMAD ZAILANI", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4411", name: "Zahra Aisya Binti Amran", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4412", name: "PUTERI ALIZA AMINAH MOHD EDAFI BINTI SHAMSUDIN", cls: "11 IBNU NAFIS / 2026" },
+  { id: "IS4413", name: "RAFAN AHMED", cls: "/ 2026" },
+  { id: "IS4416", name: "Arisha Zahraa Binti Muhammad Faisal", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4417", name: "FARAH BATRISYIA BINTI KAMALUDDIN", cls: "10 IBNU KHALDUN / 2026" },
+  { id: "IS4418", name: "LI NINGBO", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4428", name: "Warith Muhammad bin Faizal", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4429", name: "Muhammad Uzair Fatih Bin Ahmad Kefli", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4431", name: "ONAISA KYAW TUN", cls: "11 IBNU NAFIS / 2026" },
+  { id: "IS4433", name: "MOHAMAD ASHRAF BIN AHMAD FAUZI", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4434", name: "KHADIJA KHAN", cls: "8 AL-FARABI / 2026"},
+    { id: "IS4435", name: "QIANG YIJIE", cls: "/ 2026" },
+  { id: "IS4437", name: "IBRAHIM ALI ISSE", cls: "9 AL-FARABI / 2026" },
+  { id: "IS4438", name: "SUNDUS ALI ISSE", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4439", name: "QI CHENFEI", cls: "10 AL-RAZI / 2026" },
+  { id: "IS4440", name: "ZHAO ZHANYU", cls: "10 AL-RAZI / 2026" },
+  { id: "IS4442", name: "NURUL NIFRAS BINTI MOHAMED ABUBACKER MARICAR", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4443", name: "AISYAH ALIYYA BINTI RIZAL SHAHRIMAN", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4444", name: "HAFIZAH NUR AIN BINTI MOHD AMIR", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4454", name: "MOHAMMED ARAFAT", cls: "9 AL-FARABI / 2026" },
+  { id: "IS4460", name: "AZLAN SALAE", cls: "/ 2026" },
+  { id: "IS4461", name: "MUHAMMAD ARYANSHAH BIN MOHAMED ISKANDAR", cls: "9 IBNU KHALDUN / 2026" },
+  { id: "IS4463", name: "MAXINYU", cls: "/ 2026" },
+  { id: "IS4464", name: "DING JIAYI", cls: "9 AL-FARABI / 2026" },
+  { id: "IS4465", name: "THIERNO ISSA BAH", cls: "10 AL-FARABI / 2026" },
+  { id: "IS4466", name: "HAMZA", cls: "10 IBNU KHALDUN / 2026" },
+  { id: "IS4475", name: "MA DUOHA", cls: "8 AL-FARABI / 2026" },
+  { id: "IS4483", name: "MARYAM TAQWA AHMAD MUSA", cls: "/ 2026" },
+  { id: "IS4484", name: "TEHZIB NAYAB JAZBA", cls: "8 IBNU KHALDUN / 2026" },
+  { id: "IS4485", name: "ABYZAR NAJIB BIN SULTAN", cls: "/ 2026" },
+  { id: "IS4487", name: "ABDEL-RAHMAN HAROON JILLALI LOUHIBI", cls: "/ 2026" },
+  { id: "IS4489", name: "YANG YUZE", cls: "/ 2026" },
+  { id: "IS4490", name: "DING AIXUAN", cls: "/ 2026" },
+  { id: "IS4491", name: "DING AIZE", cls: "/ 2026" },
+  { id: "IS4492", name: "IZZA ALEESYA BINTI IZWAN SHAHRIL", cls: "/ 2026" },
+  { id: "IS4499", name: "SHAHIDA NUL MOHAMAD", cls: "/ 2026" },
+  { id: "IS4500", name: "SAJIDAH NUL MOHAMAD", cls: "/ 2026" },
+  { id: "IS4501", name: "AYESHA MAISARA BINTI AHMAD NADJME", cls: "/ 2026" },
+  { id: "IS4502", name: "ROSE ALYA ADRYANA BINTI ROSNIZAM", cls: "/ 2026" },
+  { id: "IS4503", name: "ABDULNASIR", cls: "/ 2026" },
+  { id: "IS4509", name: "KAWINTAWE BILLATEH", cls: "/ 2026" },
+  { id: "IS4519", name: "WAFA ZAHIDAH BINTI KAMAL AZLI", cls: "/ 2026" },
+  { id: "IS4520", name: "MOHAMED ABDEL H. CHEIKH", cls: "/ 2026" },
+  { id: "IS4523", name: "FAAZ FIRDOUS", cls: "/ 2026" },
+  { id: "IS4524", name: "ISMAIL ZAIK NUAIM", cls: "/ 2026" },
+  { id: "IS4525", name: "AAMIRA HAFSA", cls: "/ 2026" },
+  { id: "IS4526", name: "SEDRATUL MUNTAHA", cls: "/ 2026" },
+  { id: "IS4528", name: "ALFRAZAN ABDULLA SALI", cls: "/ 2026" },
+  { id: "IS4530", name: "SALLIMNAYA APRILIA FAHMI", cls: "/ 2026" },
+  { id: "IS4531", name: "MUSFIQA JAHAN NUHA", cls: "/ 2026" },
+  { id: "IS4539", name: "MAIRADA SUPPANICH", cls: "/ 2026" },
+  { id: "IS4542", name: "ZAKIR HEDAYAH", cls: "/ 2026" },
+  { id: "IS4543", name: "ASHRAFI NOOR ADILAH", cls: "/ 2026" },
+  { id: "IS4548", name: "SAMI SHIHABI", cls: "/ 2026" },
+  { id: "IS4549", name: "QASIM AHMED", cls: "/ 2026" },
+  { id: "IS4550", name: "MASTER INARM HAYEEYUSOH", cls: "/ 2026" },
+  { id: "IS4552", name: "ZEENA MOHAMED BADRUZAMAN", cls: "/ 2026" },
+  { id: "IS4554", name: "JIBREEL HOFFMANN", cls: "/ 2026" },
+  { id: "IS4555", name: "KUBRA BEGUM", cls: "/ 2026" },
+  { id: "IS4556", name: "NUR ATHIRAH DAYANA BINTI MOHD TAWFEQ", cls: "/ 2026" },
+  { id: "IS4557", name: "ADHAM UQAIL BIN MOHD TAWFEQ", cls: "/ 2026" },
+  { id: "IS4571", name: "AIRA DINDA NAFISA", cls: "/ 2026" },
+  { id: "IS4572", name: "NUR NABISHA BINTI MOHAMED ABUBACKER MARICAR MOE", cls: "/ 2026" },
+  { id: "IS4573", name: "MOHAMED NABIL MARICAR BIN MOHAMED ABUBACKER MARICAR MOE", cls: "/ 2026" },
+  { id: "IS4574", name: "MISS AFREDA WIJAN", cls: "/ 2026" },
+  { id: "IS4575", name: "BUHAIROH JEHLAEH", cls: "/ 2026" },
+  { id: "IS4576", name: "MASTER ABROT WIJAN", cls: "/ 2026" },
+  { id: "IS4578", name: "PAWORNRUT MAD-ARDAM", cls: "/ 2026" },
+  { id: "IS4579", name: "USMEE CHEDUMAN", cls: "/ 2026" },
+  { id: "IS4582", name: "KHADIJAH IBRAHEEM KHALIL", cls: "/ 2026" },
+  { id: "IS4589", name: "HOSSAIN AKASH", cls: "/ 2026" },
+  { id: "IS4590", name: "MOHAMMAD IZZAT SAMEER BIN MUHAMMAD IBRAHIM", cls: "/ 2026" },
+  { id: "IS4591", name: "INWOO JEON", cls: "/ 2026" },
+  { id: "IS4592", name: "HIND HAYEF", cls: "/ 2026" },
+  { id: "IS4593", name: "HOUDAYFA ABDELKADER EL HOUCINE HAYEF", cls: "/ 2026" },
+  { id: "IS4594", name: "SUFIYA AISYAH BINTI MOHD FADZLAN ARIEF", cls: "/ 2026" }
+];
+// Process the data - mark missing names and classes as "Not logged"
+const STUDENT_DATA = RAW_DATA.map((item, index) => {
+  // Check if name is blank, "Name", or just whitespace
+  const hasName = item.name && item.name.trim() !== "" && item.name.trim() !== "Name";
+  const displayName = hasName ? item.name.trim() : "Not logged";
+  
+  // Check if class is blank, just "/ 2026", or starts with "/"
+  const hasClass = item.cls && item.cls.trim() !== "" && item.cls.trim() !== "/ 2026" && !item.cls.trim().startsWith("/");
+  const displayClass = hasClass ? item.cls.trim() : "Not logged";
+  
+  return {
+    id: item.id,
+    name: displayName,
+    cls: displayClass,
+    isLogged: hasName
+  };
+});
+
+// Get unique classes for the filter dropdown
+const uniqueClasses = [...new Set(STUDENT_DATA.map(s => s.cls))].sort();
+
+// Populate class filter dropdown
+const classSelect = document.getElementById('classSelect');
+uniqueClasses.forEach(cls => {
+  const option = document.createElement('option');
+  option.value = cls;
+  option.textContent = cls;
+  classSelect.appendChild(option);
+});
+
+// Render function
+function render() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+  const selectedClass = document.getElementById('classSelect').value;
+  const statusFilter = document.querySelector('#filterGroup .pill.active')?.dataset.status || '';
+  
+  let filtered = STUDENT_DATA.filter(student => {
+    // Search filter
+    if (searchTerm) {
+      const matchName = student.name.toLowerCase().includes(searchTerm);
+      const matchId = student.id.toLowerCase().includes(searchTerm);
+      const matchClass = student.cls.toLowerCase().includes(searchTerm);
+      if (!matchName && !matchId && !matchClass) return false;
+    }
+    
+    // Class filter
+    if (selectedClass && student.cls !== selectedClass) return false;
+    
+    // Status filter
+    if (statusFilter === 'LOGGED' && !student.isLogged) return false;
+    if (statusFilter === 'NOTLOGGED' && student.isLogged) return false;
+    
+    return true;
+  });
+  
+  // Update count badge
+  const badge = document.getElementById('countBadge');
+  badge.textContent = `${filtered.length} / ${STUDENT_DATA.length} students`;
+  badge.className = filtered.length < STUDENT_DATA.length ? 'count-badge has-results' : 'count-badge';
+  
+  // Render table
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+  
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    document.getElementById('emptyMsg').textContent = searchTerm ? `No match for "${searchTerm}"` : 'No students match the selected filters';
+    return;
+  }
+  
+  empty.style.display = 'none';
+  
+  let html = '';
+  filtered.forEach((student, index) => {
+    const rowNum = index + 1;
+    const nameClass = student.isLogged ? '' : 'name-not-logged';
+    const classClass = student.cls === 'Not logged' ? 'class-not-logged' : '';
+    const statusBadge = student.isLogged
+      ? '<span class="badge badge-logged">Has Name</span>'
+      : '<span class="badge badge-notlogged">Not Logged</span>';
+    
+    html += `<tr>
+      <td>${rowNum}</td>
+      <td class="cell-id">${student.id}</td>
+      <td class="cell-name ${nameClass}">${student.name}</td>
+      <td class="cell-class ${classClass}">${student.cls}</td>
+      <td class="cell-status">${statusBadge}</td>
+    </tr>`;
+  });
+  
+  tbody.innerHTML = html;
+}
+
+// Search input handler
+const searchInput = document.getElementById('searchInput');
+const clearBtn = document.getElementById('clearBtn');
+
+searchInput.addEventListener('input', () => {
+  clearBtn.style.display = searchInput.value ? 'block' : 'none';
+  render();
+});
+
+clearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  clearBtn.style.display = 'none';
+  searchInput.focus();
+  render();
+});
+
+// Class filter handler
+document.getElementById('classSelect').addEventListener('change', render);
+
+// Status filter pills
+document.querySelectorAll('#filterGroup .pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('#filterGroup .pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    render();
+  });
+});
+
+// Initial render
+render();
+</script>
