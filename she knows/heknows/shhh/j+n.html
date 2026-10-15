@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grade Report · Red</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0e0707;
@@ -245,9 +245,34 @@
   body { background-image: radial-gradient(1100px 380px at 85% -8%, rgba(255,71,87,0.16), transparent 62%); background-attachment: fixed; }
   .brand-title span { background: linear-gradient(90deg, #ff4757, #ff8a5c); -webkit-background-clip: text; background-clip: text; color: transparent; }
   header { border-bottom: 1px solid var(--border); padding-bottom: 1.25rem; }
+  :root{--rgb:255,71,87}
+
+  .yr-banner{position:relative;overflow:hidden;padding:1.6rem 2.5rem 1.1rem;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(var(--rgb),0.10),transparent)}
+  .yr-banner::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(var(--rgb),0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--rgb),0.07) 1px,transparent 1px);background-size:34px 34px;animation:yrGrid 6s linear infinite;mask-image:linear-gradient(180deg,#000,transparent);-webkit-mask-image:linear-gradient(180deg,#000,transparent)}
+  .yr-banner::after{content:"";position:absolute;top:0;bottom:0;width:140px;left:-160px;background:linear-gradient(90deg,transparent,rgba(var(--rgb),0.28),transparent);animation:yrScan 4.5s ease-in-out infinite}
+  .yr-inner{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+  .yr-tag{font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;display:flex;align-items:center;gap:.6rem}
+  .yr-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 rgba(var(--rgb),.7);animation:yrPulse 1.6s infinite}
+  .yr-year{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);letter-spacing:.06em;line-height:1.05;color:var(--text);position:relative;text-shadow:0 0 18px rgba(var(--rgb),.55),0 0 42px rgba(var(--rgb),.3);animation:yrFlicker 5s infinite}
+  .yr-year em{font-style:normal;color:var(--accent)}
+  .yr-year::before,.yr-year::after{content:attr(data-t);position:absolute;left:0;top:0;width:100%;overflow:hidden;opacity:.7;pointer-events:none}
+  .yr-year::before{color:var(--accent);animation:yrGlitchA 3.2s infinite steps(1);clip-path:inset(0 0 60% 0)}
+  .yr-year::after{color:#35e6ff;animation:yrGlitchB 3.2s infinite steps(1);clip-path:inset(60% 0 0 0)}
+  .yr-ticker{position:relative;z-index:1;margin:1rem -2.5rem 0;overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:.35rem 0;white-space:nowrap}
+  .yr-ticker span{display:inline-block;font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:.35em;color:var(--muted);padding-left:100%;animation:yrTick 28s linear infinite}
+  @keyframes yrGrid{to{background-position:34px 34px}}
+  @keyframes yrScan{0%{left:-160px}60%,100%{left:105%}}
+  @keyframes yrPulse{70%{box-shadow:0 0 0 12px rgba(var(--rgb),0)}100%{box-shadow:0 0 0 0 rgba(var(--rgb),0)}}
+  @keyframes yrTick{to{transform:translateX(-100%)}}
+  @keyframes yrFlicker{0%,92%,100%{opacity:1}93%{opacity:.75}94%{opacity:1}96%{opacity:.8}}
+  @keyframes yrGlitchA{0%,90%,100%{transform:translate(0)}91%{transform:translate(-4px,1px)}93%{transform:translate(3px,-1px)}95%{transform:translate(0)}}
+  @keyframes yrGlitchB{0%,88%,100%{transform:translate(0)}89%{transform:translate(4px,-1px)}92%{transform:translate(-3px,1px)}95%{transform:translate(0)}}
+  @media (prefers-reduced-motion:reduce){.yr-banner::before,.yr-banner::after,.yr-dot,.yr-year,.yr-year::before,.yr-year::after,.yr-ticker span{animation:none}}
+  @media (max-width:600px){.yr-banner{padding:1.2rem 1.25rem .9rem}.yr-ticker{margin:1rem -1.25rem 0}}
 </style>
 </head>
 <body>
+<div class="yr-banner"><div class="yr-inner"><div><div class="yr-tag"><span class="yr-dot"></span>Academic Year · Live</div><div class="yr-year" data-t="2026–2027">2026<em>–</em>2027</div></div></div><div class="yr-ticker"><span>ACADEMIC YEAR 2026–2027 ◆ EXAMINATION RECORDS ◆ GRADE REPORT ◆ SESSION 2026/2027 ◆ SYSTEM ONLINE ◆ ACADEMIC YEAR 2026–2027 ◆ EXAMINATION RECORDS ◆ GRADE REPORT ◆ SESSION 2026/2027 ◆ SYSTEM ONLINE ◆</span></div></div>
 
 <header>
   <div class="brand">
