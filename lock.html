@@ -4,17 +4,40 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Lock</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307060f'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23333' stroke-width='6'/%3E%3Cpath d='M20 14A22 22 0 0 1 44 14' fill='none' stroke='%23a78bfa' stroke-width='7' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='28' r='8' fill='%23fff'/%3E%3Cpath d='M28 32h8l3 14H25z' fill='%23fff'/%3E%3C/svg%3E">
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#07060f;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
   canvas{display:block;width:100%;height:100%}
+#sp{position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;background:rgba(7,6,15,.88);touch-action:auto;font:600 clamp(14px,1.8vw,28px) "Trebuchet MS","Segoe UI",sans-serif;color:#fff;-webkit-user-select:text;user-select:text}
+#sp.off{transform:translateX(-200vw)}
+#sc{width:min(92vw,820px);max-height:94vh;overflow:auto;padding:1.2em;border:2px solid rgba(255,255,255,.3);border-radius:1em;background:#0d0a1c;display:flex;flex-direction:column;gap:.7em}
+#sc h2{margin:0;letter-spacing:.2em}
+#sc .r{display:flex;gap:.6em;flex-wrap:wrap;align-items:center}
+#sc input{flex:1;min-width:0;font:inherit;padding:.6em .8em;border-radius:.6em;border:2px solid rgba(255,255,255,.35);background:#07060f;color:#fff}
+#sc #sb{flex:none;width:4.5em}
+#sc button{font:inherit;padding:.6em 1em;border-radius:2em;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff;cursor:pointer}
+#sc button.go{background:#8a6bff;border-color:#8a6bff;color:#0a0716}
+#sc iframe{width:100%;height:min(30vh,240px);border:0;border-radius:.6em;background:#000}
+#sc p{margin:0;opacity:.75;font-weight:400}
+#sc a{color:#9ff}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
+<div id="sp" class="off"><div id="sc">
+<h2>SONG LINK</h2>
+<div class="r"><input id="su" placeholder="Paste a YouTube or Spotify link" autocomplete="off"><button id="sPaste">PASTE</button></div>
+<div id="pl"></div><a id="so" target="_blank" rel="noopener" style="display:none">Open link in a new tab</a>
+<div class="r"><button id="sListen">LISTEN (mic)</button><button id="sTap">TAP BEAT</button><label>BPM <input id="sb" type="number" min="60" max="200" value="100"></label></div>
+<p id="sm">Paste a link, press play, then LISTEN (mic hears your speakers) or tap the beat along with the song.</p>
+<div class="r"><button id="sUse" class="go">USE THIS SONG</button><button id="sX">CLOSE</button></div>
+</div></div>
 <script>
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W,H,R,DPR;
-function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);R=Math.min(W,H)*0.3;}
+let W,H,R,DPR,lite=false;
+function resize(){DPR=lite?Math.min(1,1280/innerWidth):Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);R=Math.min(W,H)*0.3;}
+try{const q=localStorage.getItem('lock_lite');lite=q===null?(/[?&]lite/.test(location.search)||(navigator.deviceMemory||8)<=2||(navigator.hardwareConcurrency||8)<=2):q==='1';}catch(e){}
+{const d=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'shadowBlur');Object.defineProperty(ctx,'shadowBlur',{get(){return d.get.call(ctx);},set(v){d.set.call(ctx,lite?0:v);}});}
 addEventListener('resize',resize);resize();
 
 const TAU=Math.PI*2,FONT='"Trebuchet MS","Segoe UI",sans-serif';
@@ -45,6 +68,12 @@ const BEATS=[
  {n:'Lo-fi',bpm:78,root:175,k:'x.......x.x.....',s:'....x.......x...',h:'x.x.x.x.x.x.x.x.',hv:.05,b:'0.......0.2.....',bd:.9,pad:[[0,2,3],[1,3,4]]},
  {n:'Trap',bpm:140,root:185,k:'x.......x..x....',s:'........x.......',clap:1,h:'x.x.x.xxx.x.x.xx',hv:.07,b:'0.......0..2....',bd:1.4,bv:.4},
  {n:'Drum & Bass',bpm:170,root:207,k:'x.........x.....',s:'....x.......x...',h:'x.x.x.x.x.x.x.x.',hv:.07,b:'0.........0.....'},
+ {n:'Funk',bpm:102,root:165,k:'x.....x..x.x....',s:'....x.......x...',h:'x.xxx.xxx.xxx.xx',hv:.07,b:'0..0..2.3..0.5..',bd:.3},
+ {n:'Disco',bpm:118,root:196,k:'x...x...x...x...',s:'....x.......x...',clap:1,h:'..o...o...o...o.',hv:.08,b:'0.5.0.5.0.5.0.5.',bd:.3},
+ {n:'Reggaeton',bpm:96,root:196,k:'x...x...x...x...',s:'...x..x....x..x.',h:'x.x.x.x.x.x.x.x.',hv:.06,b:'0..0..2...0..2..',bd:.5},
+ {n:'Rock',bpm:112,root:165,k:'x.......x.x.....',s:'....x.......x...',h:'x.x.x.x.x.x.x.x.',hv:.09,b:'0.0.0.0.2.2.3.3.',bd:.4},
+ {n:'Techno',bpm:132,root:185,k:'x...x...x...x...',s:'........x.......',clap:1,h:'..o...o...o...o.',hv:.1,b:'.0.0.0.0.0.0.0.0',bd:.2},
+ {n:'My Song',bpm:100,root:220,song:1},
  {n:'Off',bpm:100,root:220}
 ];
 let beat=60/BEATS[0].bpm,ROOT=BEATS[0].root;
@@ -61,7 +90,7 @@ function initAudio(){
 }
 function startBeat(i){
   beatSel=i;const B=BEATS[i];beat=60/B.bpm;ROOT=B.root;
-  if(!AC)return;t0=AC.currentTime+.12;stepN=0;nextT=t0;
+  if(!AC)return;if(B.song&&songTm!=null){lockSong(B.bpm,songTm);return;}t0=AC.currentTime+.12;stepN=0;nextT=t0;
 }
 const ratio=i=>Math.pow(2,(SC[i%5]+12*Math.floor(i/5))/12);
 function tone(tm,f,type,vol,dur,cut,dest){
@@ -270,7 +299,7 @@ const modes=[
 const hue=()=>(mode.hue+streak*9)%360;
 
 // ================= FLOW =================
-function burst(x,y,n,h,spd){
+function burst(x,y,n,h,spd){if(lite)n>>=1;
   for(let i=0;i<n;i++){const an=Math.random()*TAU,s=(.3+Math.random())*spd;
     particles.push({x,y,vx:Math.cos(an)*s,vy:Math.sin(an)*s,life:1,hue:h,sz:2+Math.random()*3});}
 }
@@ -329,7 +358,7 @@ addEventListener('keydown',e=>{
 // 3D: a spectrum terrain that rolls toward you one row per sixteenth note. 2D: a waveform ring with a radial equaliser.
 // Hits send ripples through both. Your imported song keeps "playing" visually even while it is silent.
 const BGN=['3D terrain','2D waves','Both','Off'],NC=64,NR=28;
-let bgStyle=2,rows=[],lastStp=-1;
+let bgStyle=lite?3:2,rows=[],lastStp=-1;
 try{const raw=localStorage.getItem('lock_bg'),v=+raw;if(raw!==null&&v>=0&&v<4)bgStyle=v;}catch(e){}
 const fq=new Uint8Array(512),td=new Uint8Array(1024);
 function spec(){
@@ -439,7 +468,9 @@ addEventListener('contextmenu',e=>e.preventDefault());
 
 // ================= LOOP =================
 let lastA=0,lastP=performance.now();
+let lastF=0;
 function frame(now){
+  if(lite&&now-lastF<30){requestAnimationFrame(frame);return;}lastF=now;
   let dt;
   if(AC){const a=AC.currentTime;dt=Math.min(.1,a-lastA);lastA=a;}
   else dt=Math.min(.05,(now-lastP)/1000);
@@ -448,7 +479,7 @@ function frame(now){
     if(mode.multi)mode.tick();
     else{
       mode.step(dt);
-      const[x,y]=mode.pos();trail.push([x,y,1]);if(trail.length>24)trail.shift();
+      const[x,y]=mode.pos();trail.push([x,y,1]);if(trail.length>(lite?8:24))trail.shift();
       if(mode.dist()<=half)inside=true;else if(inside)die();
     }
   }
@@ -491,6 +522,21 @@ function drawScene(h){
   ctx.shadowBlur=20;ctx.shadowColor=`hsl(${h},100%,65%)`;ctx.strokeStyle=`hsl(${h},100%,75%)`;ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(0,hz);ctx.lineTo(W,hz);ctx.stroke();ctx.shadowBlur=0;
 }
+function logo(x,y,s,h,spin){
+  const pl=pulse(),a=performance.now()/900,T=-Math.PI/2;
+  ctx.save();ctx.translate(x,y);ctx.lineCap='round';
+  ctx.shadowBlur=0;ctx.lineWidth=s*.16;ctx.strokeStyle='rgba(255,255,255,.14)';
+  ctx.beginPath();ctx.arc(0,0,s,0,TAU);ctx.stroke();
+  glowStroke(s*.2,h);ctx.beginPath();ctx.arc(0,0,s,T-.6,T+.6);ctx.stroke();
+  coreStroke(s*.07);ctx.beginPath();ctx.arc(0,0,s,T-.18,T+.18);ctx.stroke();
+  ctx.shadowColor=`hsl(${h},100%,60%)`;ctx.shadowBlur=18+pl*18;ctx.fillStyle='#fff';
+  ctx.beginPath();ctx.arc(0,-s*.12,s*.3,0,TAU);ctx.fill();
+  ctx.beginPath();ctx.moveTo(-s*.13,s*.03);ctx.lineTo(s*.13,s*.03);ctx.lineTo(s*.22,s*.5);ctx.lineTo(-s*.22,s*.5);ctx.closePath();ctx.fill();
+  ctx.shadowBlur=0;ctx.fillStyle='#0a0716';ctx.beginPath();ctx.arc(0,-s*.12,s*.11,0,TAU);ctx.fill();
+  ctx.fillRect(-s*.045,-s*.12,s*.09,s*.3);
+  if(spin){ctx.shadowColor='#fff';ctx.shadowBlur=14;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(Math.cos(a)*s,Math.sin(a)*s,s*.1*(1+pl*.3),0,TAU);ctx.fill();}
+  ctx.restore();
+}
 function title(y,size,h){
   const d=3+pulse()*8;
   ctx.font=`800 ${size}px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='middle';
@@ -515,7 +561,7 @@ function pills(L,si,y,on,h,sub,per,tap){
 }
 function drawMenu(h){
   ctx.fillStyle='rgba(7,6,15,.5)';ctx.fillRect(0,H*.24,W,H*.68);
-  title(H*.12,R*.62,h);
+  title(H*.12,R*.62,h);if(W>R*5)[-1,1].forEach(q=>logo(cx()+q*R*1.25,H*.12,R*.2,h,1));
   ctx.textAlign='center';ctx.textBaseline='middle';
   const lab=(s,y,on)=>{ctx.font=`700 ${R*.09}px ${FONT}`;ctx.fillStyle=on?`hsl(${h},95%,75%)`:'rgba(255,255,255,.4)';ctx.fillText(s,cx(),y);};
   lab('MODE',H*.29,row===0);
@@ -532,10 +578,13 @@ function drawMenu(h){
   lab('DIFFICULTY'+(b?'      best '+b:''),H*.52,row===1);
   pills(DIFFS.map(d=>d.n),diff,H*.52+R*.2,row===1,h,null,null,i=>{diff=i;row=1;});
   lab('BEAT',H*.66,row===2);
-  pills(BEATS.map(x=>x.n),beatSel,H*.66+R*.22,row===2,h,BEATS.map(x=>x.k?x.bpm+' bpm':'silent'),null,i=>{row=2;startBeat(i);});
+  const bw=[-2,-1,0,1,2].map(o=>(beatSel+o+BEATS.length)%BEATS.length);
+  pills(bw.map(i=>BEATS[i].n),2,H*.66+R*.22,row===2,h,bw.map(i=>BEATS[i].k||BEATS[i].song?BEATS[i].bpm+' bpm':'silent'),null,i=>{row=2;startBeat(bw[i]);if(BEATS[bw[i]].song)openSong();});
   btn(cx()-R*.9,H*.85-R*.13,R*1.8,R*.26,'PLAY',press,true,R*.12);
   btn(12,12,R*1.6,R*.2,'TAP TO PLAY: '+(tapPlay?'ON':'OFF'),()=>{tapPlay=!tapPlay;},tapPlay,R*.075);
   btn(W-R*1.2-12,12,R*1.2,R*.2,'FULLSCREEN',toggleFS,false,R*.075);
+  btn(12,12+R*.24,R*1.6,R*.2,'LITE MODE: '+(lite?'ON':'OFF'),()=>setLite(!lite),lite,R*.075);
+  btn(W-R*1.2-12,12+R*.24,R*1.2,R*.2,'SONG LINK',openSong,beatSel===SONGI,R*.075);
   if(!tapPlay){ctx.textAlign='center';ctx.font=`${R*.08}px ${FONT}`;ctx.fillStyle='rgba(255,255,255,.5)';
     ctx.fillText('\u2191 \u2193 row      \u2190 \u2192 change      SPACE play',cx(),H*.955);}
 }
@@ -548,9 +597,9 @@ function draw(){
     const tg=modes[sel].hue,dd=((tg-hCur+540)%360)-180;hCur=(hCur+dd*.12+360)%360;
     drawScene(hCur);
     if(state==='intro'){
-      title(H*.36,R*.95,hCur);
+      logo(cx(),H*.17,R*.34,hCur,1);title(H*.43,R*.95,hCur);
       ctx.font=`700 ${R*.13}px ${FONT}`;ctx.fillStyle=`rgba(255,255,255,${.55+.45*Math.sin(performance.now()/260)})`;
-      ctx.fillText('TAP OR PRESS ANY KEY',cx(),H*.5);
+      ctx.fillText('TAP OR PRESS ANY KEY',cx(),H*.6);
     }else drawMenu(hCur);
     ctx.restore();return;
   }
@@ -604,6 +653,66 @@ function draw(){
   if(flash>.01){ctx.fillStyle=`rgba(255,255,255,${flash})`;ctx.fillRect(-20,-20,W+40,H+40);}
   ctx.restore();
 }
+// ================= LITE + SONG SYNC =================
+// Lite: no glow shadows, 30fps, capped canvas size (max 1280 wide), fewer particles, background off. Built for smartboards.
+function setLite(v){lite=v;try{localStorage.setItem('lock_lite',v?'1':'0');}catch(e){}bgStyle=v?3:2;resize();}
+// Song sync: a browser cannot read audio out of a YouTube or Spotify player, so the game hears it (mic) or you tap it,
+// then the whole game grid locks to that tempo and phase. Drums go silent; your hits play over the real song.
+const SONGI=BEATS.findIndex(b=>b.song);let songTm=null,taps=[];
+const $=id=>document.getElementById(id),spn=$('sp'),su=$('su'),sm=$('sm'),sb=$('sb'),msg=t=>{sm.textContent=t;};
+['pointerdown','pointerup','contextmenu','keydown'].forEach(ev=>spn.addEventListener(ev,e=>e.stopPropagation()));
+const fold=b=>{while(b<75)b*=2;while(b>=160)b/=2;return b;};
+function openSong(){spn.classList.remove('off');}
+function lockSong(bpm,tm){
+  const B=BEATS[SONGI];B.bpm=Math.round(bpm*10)/10;sb.value=Math.round(bpm);songTm=tm;initAudio();
+  beatSel=SONGI;beat=60/B.bpm;ROOT=B.root;
+  const ac=AC.currentTime-(performance.now()-tm)/1000,k=Math.ceil((AC.currentTime+.12-ac)/beat);
+  t0=ac+k*beat;stepN=0;nextT=t0;
+}
+su.oninput=()=>{
+  const u=su.value.trim(),pl=$('pl'),so=$('so');let m,src='';pl.textContent='';
+  if(m=u.match(/(?:youtu\.be\/|[?&]v=|shorts\/|embed\/)([\w-]{11})/))src='https://www.youtube.com/embed/'+m[1]+'?playsinline=1';
+  else if(m=u.match(/open\.spotify\.com\/(?:intl-\w+\/)?(track|album|playlist|episode)\/(\w+)/))src='https://open.spotify.com/embed/'+m[1]+'/'+m[2];
+  if(src){const f=document.createElement('iframe');f.src=src;f.allow='autoplay; encrypted-media';pl.appendChild(f);msg('Link found. Press play on it, then LISTEN or TAP BEAT.');}
+  else if(u)msg('That does not look like a YouTube or Spotify link.');
+  const ok=/^https:\/\/(www\.|m\.|music\.|open\.)?(youtube\.com|youtu\.be|spotify\.com)\//.test(u);
+  so.style.display=ok?'':'none';if(ok)so.href=u;
+};
+$('sPaste').onclick=async()=>{try{su.value=await navigator.clipboard.readText();su.oninput();}catch(e){msg('Paste blocked here. Long-press the box or press Ctrl+V.');}};
+$('sTap').onclick=()=>{
+  const n=performance.now();if(taps.length&&n-taps[taps.length-1]>2000)taps=[];taps=taps.concat(n).slice(-8);
+  let bpm=+sb.value||100;
+  if(taps.length>=4){const d=[];for(let i=1;i<taps.length;i++)d.push(taps[i]-taps[i-1]);d.sort((a,b)=>a-b);bpm=fold(60000/d[d.length>>1]);}
+  lockSong(bpm,n);msg(taps.length<4?'Keep tapping on the beat. One tap re-aligns the beat, 4+ taps set the tempo.':bpm.toFixed(1)+' BPM locked. Tap once on a beat to re-align.');
+};
+sb.onchange=()=>lockSong(Math.max(60,Math.min(200,+sb.value||100)),songTm==null?performance.now():songTm);
+$('sUse').onclick=()=>{if(songTm==null)lockSong(+sb.value||100,performance.now());else startBeat(SONGI);spn.classList.add('off');};
+$('sX').onclick=()=>spn.classList.add('off');
+$('sListen').onclick=async()=>{
+  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia))return msg('Microphone is not available here. Use TAP BEAT instead.');
+  let st;try{st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});}catch(e){return msg('Microphone blocked. Allow it, or use TAP BEAT.');}
+  initAudio();const a=AC.createAnalyser();a.fftSize=512;AC.createMediaStreamSource(st).connect(a);
+  const buf=new Uint8Array(a.frequencyBinCount),on=[],end=performance.now()+9000;let pv=0,av=0;
+  const iv=setInterval(()=>{
+    a.getByteFrequencyData(buf);let e=0;for(let i=1;i<24;i++)e+=buf[i];
+    const f=Math.max(0,e-pv),now=performance.now();pv=e;av=av*.95+f*.05;
+    if(f>av*2+25&&(!on.length||now-on[on.length-1]>220))on.push(now);
+    msg('Listening... '+Math.ceil((end-now)/1000)+'s ('+on.length+' hits heard)');
+    if(now>end){clearInterval(iv);st.getTracks().forEach(x=>x.stop());analyse(on);}
+  },15);
+};
+function analyse(o){
+  if(o.length<10)return msg('Could not hear a steady beat. Turn the song up near the mic, or use TAP BEAT.');
+  const h={};
+  for(let i=1;i<o.length;i++)for(let j=1;j<=2&&i-j>=0;j++){const b=Math.round(fold(60000/(o[i]-o[i-j])));h[b]=(h[b]||0)+1;}
+  let bpm=100,best=0;for(let b=75;b<160;b++){const v=(h[b-1]||0)+2*(h[b]||0)+(h[b+1]||0);if(v>best){best=v;bpm=b;}}
+  let P=60000/bpm,sx=0,sy=0;o.forEach(x=>{const q=(x-o[0])/P*TAU;sx+=Math.cos(q);sy+=Math.sin(q);});
+  let a0=o[0]+Math.atan2(sy,sx)/TAU*P;
+  const g=o.filter(x=>{const k=(x-a0)/P;return Math.abs(k-Math.round(k))<.15;});
+  if(g.length>=6){let N=g.length,X=0,Y=0,XY=0,XX=0;g.forEach(x=>{const n=Math.round((x-a0)/P);X+=n;Y+=x;XY+=n*x;XX+=n*n;});
+    const d=N*XX-X*X;if(d){const b=(N*XY-X*Y)/d;if(Math.abs(b-P)<P*.05){P=b;a0=(Y-b*X)/N;bpm=60000/P;}}}
+  lockSong(bpm,a0);msg('Heard about '+bpm.toFixed(1)+' BPM and locked on. Tap once on a beat to nudge the alignment.');
+};
 requestAnimationFrame(frame);
 </script>
 </body>
