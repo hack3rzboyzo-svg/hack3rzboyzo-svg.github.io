@@ -340,7 +340,7 @@ function submitScore(sc){
   setTimeout(()=>{
     let n='';try{n=localStorage.getItem('lock_name')||'';}catch(e){}
     if(!n){n=(prompt('New best! Enter a name for the leaderboard:','')||'').trim().slice(0,12);if(!n)return;try{localStorage.setItem('lock_name',n);}catch(e){}}
-    fetch(WORKER+'score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:'lock',n:n,s:sc})}).catch(()=>{});
+    fetch(WORKER+'scores',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:'lock',name:n,score:sc})}).catch(()=>{});
   },600);
 }
 addEventListener('keydown',e=>{
