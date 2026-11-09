@@ -331,7 +331,17 @@ function press(){
 function die(){
   state='dead';deadAt=performance.now();buzz();shake=18;flash=.35;
   const[x,y]=mode.pos();burst(x,y,50,350,6);
-  if(score>(bests[bk()]||0)){bests[bk()]=score;try{localStorage.setItem('lock_bests3',JSON.stringify(bests));}catch(e){}}
+  if(score>(bests[bk()]||0)){bests[bk()]=score;try{localStorage.setItem('lock_bests3',JSON.stringify(bests));}catch(e){}submitScore(score);}
+}
+// ---- global high scores (Cloudflare Worker, game id 'lock') ----
+const WORKER='https://slave01.hack3rzboyzo.workers.dev/';
+function submitScore(sc){
+  if(!(sc>0))return;
+  setTimeout(()=>{
+    let n='';try{n=localStorage.getItem('lock_name')||'';}catch(e){}
+    if(!n){n=(prompt('New best! Enter a name for the leaderboard:','')||'').trim().slice(0,12);if(!n)return;try{localStorage.setItem('lock_name',n);}catch(e){}}
+    fetch(WORKER+'score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:'lock',n:n,s:sc})}).catch(()=>{});
+  },600);
 }
 addEventListener('keydown',e=>{
   const k=e.code;
@@ -432,6 +442,7 @@ function drawBG(){
 }
 
 // ================= TOUCH / POINTER INPUT =================
+function goArcade(){location.href='index.html';}
 function goMenu(){state='menu';if(mg)mg.gain.value=.5;startBeat(beatSel);}
 function enterMenu(){initAudio();state='menu';startBeat(beatSel);}
 function cycleBG(){bgStyle=(bgStyle+1)%4;try{localStorage.setItem('lock_bg',bgStyle);}catch(e){}}
@@ -585,6 +596,7 @@ function drawMenu(h){
   btn(W-R*1.2-12,12,R*1.2,R*.2,'FULLSCREEN',toggleFS,false,R*.075);
   btn(12,12+R*.24,R*1.6,R*.2,'LITE MODE: '+(lite?'ON':'OFF'),()=>setLite(!lite),lite,R*.075);
   btn(W-R*1.2-12,12+R*.24,R*1.2,R*.2,'SONG LINK',openSong,beatSel===SONGI,R*.075);
+  btn(12,12+R*.48,R*1.6,R*.2,'\u25C2 BACK TO ARCADE',goArcade,false,R*.075);
   if(!tapPlay){ctx.textAlign='center';ctx.font=`${R*.08}px ${FONT}`;ctx.fillStyle='rgba(255,255,255,.5)';
     ctx.fillText('\u2191 \u2193 row      \u2190 \u2192 change      SPACE play',cx(),H*.955);}
 }
@@ -647,6 +659,7 @@ function draw(){
     if(!tapPlay&&performance.now()-deadAt>450)ctx.fillText('SPACE to retry      ESC for menu',cx(),cy()+R*.72);
     btn(cx()-R*.95,cy()+R*.9,R*.9,R*.26,'RETRY',()=>{if(performance.now()-deadAt>450)startMode();},true,R*.11);
     btn(cx()+R*.05,cy()+R*.9,R*.9,R*.26,'MENU',goMenu,false,R*.11);
+    btn(cx()-R*.95,cy()+R*1.25,R*1.9,R*.22,'\u25C2 BACK TO ARCADE',goArcade,false,R*.09);
   }
   if(popText){ctx.font=`800 ${R*.16}px ${FONT}`;ctx.fillStyle=`rgba(255,255,255,${popText.life})`;
     ctx.fillText('PERFECT',cx(),H*.2-(1-popText.life)*30);}
