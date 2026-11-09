@@ -2,7 +2,7 @@
 <script src="sfx.js"></script>
 <script src="arcade.js"></script>
 <script>
-const A=Arcade.mount({id:'hell',title:'HELL CORRIDOR',w:320,h:200,px:1,pad:'LRUDAB',help:'↑↓ MOVE · ←→ TURN · HOLD Z + ←→ STRAFE · SPACE OR CLICK TO FIRE',init:pick});
+const A=Arcade.mount({id:'hell',title:'HELL CORRIDOR',w:320,h:200,px:1,pad:'LRUDAB',help:'⬆️⬇️ MOVE · ⬅️➡️ TURN · HOLD Z +  ⬅️➡️ SIDE WALK · SPACE OR CLICK TO FIRE',init:pick});
 const c=A.ctx,W=320,H=200,zb=[],
 MP=['1111111111111111','1000000000000001','1022200000033001','1000000000000001','1000000110000001','1000000110000201','1030000000000001','1000000000000001','1000220000000001','1000000000330001','1000000000000001','1002000110000001','1000000110000301','1000000000000001','1000000000000001','1111111111111111'].map(r=>[...r].map(Number)),
 WC=[0,[230,40,180],[40,200,230],[150,80,255]],
