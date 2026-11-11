@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lavishly+Yours&family=Mea+Culpa&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0a0f2c;
@@ -449,6 +450,129 @@
     text-transform: uppercase;
   }
 
+
+  /* ── BATTLE GROUNDS (military location) ── */
+  .battle-section {
+    margin: 70px auto 0;
+    max-width: 760px;
+    animation: fadeDown 0.8s 0.5s ease both;
+  }
+  .battle-title {
+    font-family: 'Black Ops One', 'Cinzel Decorative', serif;
+    font-size: clamp(1.6rem, 4.5vw, 2.8rem);
+    color: #c7d08a;
+    letter-spacing: 6px;
+    text-shadow: 0 0 22px rgba(160,180,70,0.45);
+    margin-bottom: 8px;
+  }
+  .battle-subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 5px;
+    color: #8f9a5a;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+  }
+  .battle-card {
+    position: relative;
+    background: rgba(70,82,36,0.18);
+    border: 1px solid rgba(160,180,70,0.4);
+    border-radius: 6px;
+    padding: 22px;
+    background-image:
+      repeating-linear-gradient(45deg, rgba(160,180,70,0.04) 0 10px, transparent 10px 20px);
+  }
+  .battle-tag {
+    position: absolute;
+    top: -13px; left: 18px;
+    background: #0a0f2c;
+    border: 1px solid #c7d08a;
+    color: #c7d08a;
+    font-family: 'Black Ops One', serif;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    padding: 3px 12px;
+  }
+  .battle-tag.red { left: auto; right: 18px; border-color: var(--red); color: var(--red); animation: blinkTag 1.6s steps(2) infinite; }
+  @keyframes blinkTag { 50% { opacity: 0.35; } }
+  .battle-frame {
+    position: relative;
+    overflow: hidden;
+    border: 2px solid rgba(160,180,70,0.6);
+    border-radius: 4px;
+    margin-bottom: 18px;
+  }
+  .battle-frame img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: sepia(0.55) hue-rotate(50deg) saturate(0.9) contrast(1.1) brightness(0.85);
+  }
+  .battle-frame::before { /* scanlines */
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.22) 0 1px, transparent 1px 3px);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .battle-frame::after { /* crosshair */
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 90px; height: 90px;
+    transform: translate(-50%,-50%);
+    border: 1px solid rgba(255,34,68,0.75);
+    border-radius: 50%;
+    background:
+      linear-gradient(rgba(255,34,68,0.75), rgba(255,34,68,0.75)) center/1px 140% no-repeat,
+      linear-gradient(rgba(255,34,68,0.75), rgba(255,34,68,0.75)) center/140% 1px no-repeat;
+    box-shadow: 0 0 14px rgba(255,34,68,0.35);
+    pointer-events: none;
+    z-index: 3;
+  }
+  .corner { position: absolute; width: 22px; height: 22px; border: 2px solid #c7d08a; z-index: 4; }
+  .corner.tl { top: 8px; left: 8px; border-right: 0; border-bottom: 0; }
+  .corner.tr { top: 8px; right: 8px; border-left: 0; border-bottom: 0; }
+  .corner.bl { bottom: 8px; left: 8px; border-right: 0; border-top: 0; }
+  .corner.br { bottom: 8px; right: 8px; border-left: 0; border-top: 0; }
+  .battle-rec {
+    position: absolute; top: 14px; left: 42px; z-index: 4;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 2px; color: #ff4d6a;
+  }
+  .battle-rec::before { content: '● '; animation: blinkTag 1s steps(2) infinite; }
+  .battle-name {
+    font-family: 'Black Ops One', serif;
+    font-size: 1.1rem;
+    color: #c7d08a;
+    letter-spacing: 4px;
+    margin-bottom: 14px;
+  }
+  .battle-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    text-align: left;
+  }
+  .battle-info div {
+    background: rgba(0,0,0,0.3);
+    border-left: 3px solid #8f9a5a;
+    padding: 8px 12px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .battle-info span { display: block; font-size: 0.55rem; letter-spacing: 3px; color: #8f9a5a; text-transform: uppercase; }
+  .battle-info b { font-size: 0.8rem; letter-spacing: 2px; color: #e3e8b8; font-weight: 400; }
+  .battle-info b.hot { color: var(--red); }
+  .battle-brief {
+    margin-top: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    line-height: 1.7;
+    color: #b9c389;
+    text-align: left;
+  }
+
   /* ── SUGGESTION BOX ── */
   .suggest-section {
     margin: 80px auto 0;
@@ -727,6 +851,44 @@
         <p class="enemy-desc">Silencing the sovereign</p>
       </div>
 
+    </div>
+  </div>
+
+  <!-- DIVIDER -->
+  <div class="divider"><span>✪</span></div>
+
+  <!-- BATTLE GROUNDS -->
+  <div class="battle-section">
+    <h2 class="battle-title">THE BATTLE GROUNDS</h2>
+    <p class="battle-subtitle">Forward Operating Base · Restricted Area</p>
+
+    <div class="battle-card">
+      <span class="battle-tag">★ CLASSIFIED</span>
+      <span class="battle-tag red">HOT ZONE</span>
+
+      <div class="battle-frame">
+        <span class="corner tl"></span><span class="corner tr"></span>
+        <span class="corner bl"></span><span class="corner br"></span>
+        <span class="battle-rec">REC · CAM-01</span>
+        <img src="./Pics/battlegrounds.jpg" alt="The Battle Grounds">
+      </div>
+
+      <p class="battle-name">OPERATION: THE VÉO</p>
+
+      <div class="battle-info">
+        <div><span>Location</span><b>The Battle Grounds</b></div>
+        <div><span>Sector</span><b>Alpha-7</b></div>
+        <div><span>Grid Ref</span><b>MGRS 48N-XX-0420</b></div>
+        <div><span>Threat Level</span><b class="hot">HIGH</b></div>
+        <div><span>Status</span><b>Squad Deployed</b></div>
+        <div><span>Clearance</span><b>Lunar Gooners Only</b></div>
+      </div>
+
+      <p class="battle-brief">
+        &gt; BRIEFING: Primary rally point of the Lunar Gooners.<br>
+        &gt; Enemy activity reported nearby. Stay sharp, stay low.<br>
+        &gt; Do not share coordinates with unauthorized personnel.
+      </p>
     </div>
   </div>
 
