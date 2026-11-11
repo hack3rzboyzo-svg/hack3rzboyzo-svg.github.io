@@ -20,10 +20,18 @@
 #sc iframe{width:100%;height:min(30vh,240px);border:0;border-radius:.6em;background:#000}
 #sc p{margin:0;opacity:.75;font-weight:400}
 #sc a{color:#9ff}
+#lb{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:8;display:flex;flex-direction:column;align-items:center;gap:.5em;padding:.7em .9em;border:2px solid rgba(255,255,255,.3);border-radius:1em;background:rgba(13,10,28,.94);color:#fff;font:600 clamp(13px,1.6vw,22px) "Trebuchet MS","Segoe UI",sans-serif;max-width:94vw;touch-action:auto}
+#lb.off{display:none}
+#lb .r{display:flex;gap:.5em;align-items:center}
+#lb input{width:11em;max-width:50vw;font:inherit;padding:.5em .7em;border-radius:.6em;border:2px solid rgba(255,255,255,.35);background:#07060f;color:#fff}
+#lb button{font:inherit;padding:.5em 1em;border-radius:2em;border:2px solid #8a6bff;background:#8a6bff;color:#0a0716;cursor:pointer}
+#lb button:disabled{opacity:.5}
+#lm{min-height:1.2em;opacity:.85;font-weight:400}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
+<div id="lb" class="off"><div>NEW BEST! Post it to the leaderboard</div><div class="r"><input id="ln" maxlength="12" placeholder="Your name" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="ls">SUBMIT</button></div><div id="lm"></div></div>
 <div id="sp" class="off"><div id="sc">
 <h2>SONG LINK</h2>
 <div class="r"><input id="su" placeholder="Paste a YouTube or Spotify link" autocomplete="off"><button id="sPaste">PASTE</button></div>
@@ -303,7 +311,7 @@ function burst(x,y,n,h,spd){if(lite)n>>=1;
   for(let i=0;i<n;i++){const an=Math.random()*TAU,s=(.3+Math.random())*spd;
     particles.push({x,y,vx:Math.cos(an)*s,vy:Math.sin(an)*s,life:1,hue:h,sz:2+Math.random()*3});}
 }
-function startMode(){
+function startMode(){hideSubmit();
   mode=modes[sel];const d=DIFFS[diff];
   sp=mode.s0*d.s;half=mode.h0*d.hs;hMin=mode.hm*d.hm;shr=1-(1-mode.sh)*d.sh;spMax=mode.sm*d.sm;
   score=0;streak=0;perfects=0;ripples=[];rows=[];lastStp=-1;particles=[];rings=[];trail=[];shake=0;flash=0;popText=null;
@@ -331,18 +339,37 @@ function press(){
 function die(){
   state='dead';deadAt=performance.now();buzz();shake=18;flash=.35;
   const[x,y]=mode.pos();burst(x,y,50,350,6);
-  if(score>(bests[bk()]||0)){bests[bk()]=score;try{localStorage.setItem('lock_bests3',JSON.stringify(bests));}catch(e){}submitScore(score);}
+  if(score>(bests[bk()]||0)){bests[bk()]=score;try{localStorage.setItem('lock_bests3',JSON.stringify(bests));}catch(e){}showSubmit(score);}
 }
 // ---- global high scores (Cloudflare Worker, game id 'lock') ----
 const WORKER='https://slave01.hack3rzboyzo.workers.dev/';
-function submitScore(sc){
+const lbEl=document.getElementById('lb'),lnEl=document.getElementById('ln'),lsEl=document.getElementById('ls'),lmEl=document.getElementById('lm');
+let lbPend=0;
+function hideSubmit(){lbPend=0;lbEl.classList.add('off');}
+function showSubmit(sc){
   if(!(sc>0))return;
-  setTimeout(()=>{
-    let n='';try{n=localStorage.getItem('lock_name')||'';}catch(e){}
-    if(!n){n=(prompt('New best! Enter a name for the leaderboard:','')||'').trim().slice(0,12);if(!n)return;try{localStorage.setItem('lock_name',n);}catch(e){}}
-    fetch(WORKER+'scores',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:'lock',name:n,score:sc})}).catch(()=>{});
-  },600);
+  lbPend=sc;let n='';try{n=localStorage.getItem('lock_name')||'';}catch(e){}
+  lnEl.value=n;lmEl.textContent=n?'Tap SUBMIT to post as '+n+', or change the name.':'Type a name, then SUBMIT.';
+  lsEl.disabled=false;lbEl.classList.remove('off');
+  setTimeout(()=>{if(lbPend===sc&&!lnEl.value)lnEl.focus();},700);
 }
+async function postScore(){
+  if(!lbPend)return;
+  const n=lnEl.value.trim().slice(0,12),sc=lbPend;
+  if(!n){lmEl.textContent='Enter a name first.';lnEl.focus();return;}
+  try{localStorage.setItem('lock_name',n);}catch(e){}
+  lsEl.disabled=true;lmEl.textContent='Submitting...';
+  try{
+    const r=await fetch(WORKER+'scores',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:'lock',name:n,score:sc})});
+    const j=await r.json().catch(()=>({}));
+    if(r.ok&&j.ok){lmEl.textContent=j.rank?'Posted! You are #'+j.rank+' on the Hall of Fame.':'Posted, but not in the top 25 yet.';lbPend=0;lnEl.blur();}
+    else if(r.status===429){lmEl.textContent='Too fast, try again in '+(j.retryAfter||2)+'s.';lsEl.disabled=false;}
+    else{lmEl.textContent='Could not save ('+(j.detail||j.error||r.status)+').';lsEl.disabled=false;}
+  }catch(e){lmEl.textContent='Offline, try again.';lsEl.disabled=false;}
+}
+lsEl.onclick=postScore;
+lnEl.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();postScore();}};
+['pointerdown','pointerup','contextmenu','keydown'].forEach(ev=>lbEl.addEventListener(ev,e=>e.stopPropagation()));
 addEventListener('keydown',e=>{
   const k=e.code;
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k))e.preventDefault();
@@ -443,7 +470,7 @@ function drawBG(){
 
 // ================= TOUCH / POINTER INPUT =================
 function goArcade(){location.href='index.html';}
-function goMenu(){state='menu';if(mg)mg.gain.value=.5;startBeat(beatSel);}
+function goMenu(){hideSubmit();state='menu';if(mg)mg.gain.value=.5;startBeat(beatSel);}
 function enterMenu(){initAudio();state='menu';startBeat(beatSel);}
 function cycleBG(){bgStyle=(bgStyle+1)%4;try{localStorage.setItem('lock_bg',bgStyle);}catch(e){}}
 function toggleFS(){const d=document,el=d.documentElement;try{if(d.fullscreenElement)d.exitFullscreen();else if(el.requestFullscreen)el.requestFullscreen();}catch(e){}}
