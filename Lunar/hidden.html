@@ -284,7 +284,7 @@
     color: #00f2ff;
     text-transform: uppercase;
   }
-  .girly-subtitle {
+ .girly-subtitle {
     font-size: 0.75rem;
     letter-spacing: 2px;
     color: #ff00bf;
@@ -947,7 +947,7 @@
       setTimeout(() => t.classList.remove('show'), 2500);
     }
 
-    function addLogEntry(timestamp, text, meta) {
+    function addLogEntry(timestamp, text) {
       const empty = document.getElementById('emptyMsg');
       if (empty) empty.style.display = 'none';
 
@@ -956,11 +956,7 @@
 
       const ts = document.createElement('div');
       ts.className = 'ts';
-      const bits = [timestamp];
-      if (meta && meta.city) bits.push(`${meta.flag || ''} ${meta.city}`.trim());
-      if (meta && meta.t) bits.push(meta.t);
-      if (meta && meta.ip) bits.push(meta.ip);
-      ts.textContent = bits.join(' · ');
+      ts.textContent = timestamp;
       div.appendChild(ts);
 
       // text node (not innerHTML) so a submission can't inject HTML/script
@@ -1077,7 +1073,7 @@
         catch { throw new Error(`HTTP ${res.status}, not JSON: ${raw.slice(0, 120)}`); }
         if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
         // worker returns newest first
-        data.items.forEach(i => addLogEntry(new Date(i.ts).toLocaleString(), i.text, i.meta));
+        data.items.forEach(i => addLogEntry(new Date(i.ts).toLocaleString(), i.text));
       } catch (err) {
         console.warn('Could not load suggestions', err);
       }
@@ -1104,7 +1100,7 @@
           console.error('Submit failed', res.status, raw);
           throw new Error(`${res.status} ${result.error || raw.slice(0, 120) || 'no response'}`);
         }
-        addLogEntry(new Date().toLocaleString(), text, result.entry && result.entry.meta);
+        addLogEntry(new Date().toLocaleString(), text);
         suggestInput.value = '';
         showToast('Submitted ✓');
       } catch (err) {
