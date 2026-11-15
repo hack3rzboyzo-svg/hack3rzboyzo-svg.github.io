@@ -72,8 +72,8 @@ const WORKER = new URLSearchParams(location.search).get("w")
   || localStorage.getItem("worker")
   || "https://slave01.hack3rzboyzo.workers.dev";
 
-const PASS_HASH = "b5jewddjewf2jew44jew71jewb9jew04jew63jewe3jew4djewc6jewe1jew9bjewdbjew82jew21jew5djewcajewc3jew9ajewabjew84jew25jewa9jew6fjewd3jew79jeweejew8ajew14jewfajewff";
-const UNLOCK_KEY = "jew";
+const PASS = "jew";
+const UNLOCK_KEY = "intel_unlocked";
 
 let items = [], stats = null, vpnOnly = false;
 let unlocked = sessionStorage.getItem(UNLOCK_KEY) === "1";
@@ -281,12 +281,9 @@ function refreshLockUi() {
   document.getElementById("lockbox").style.display = unlocked ? "none" : "";
 }
 
-async function tryUnlock() {
-  const v = document.getElementById("pass").value;
-  if (!v) return;
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v));
-  const hex = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
-  if (hex === PASS_HASH) {
+function tryUnlock() {
+  const v = document.getElementById("pass").value.trim().toLowerCase();
+  if (v === PASS) {
     unlocked = true;
     sessionStorage.setItem(UNLOCK_KEY, "1");
     document.getElementById("pass").value = "";
