@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Exclusive Gooner content</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
@@ -16,238 +18,6 @@
     --text: #e0eaff;
     --green: #0c5b29;
   }
-  <!--suggestions-->
-  .suggest-section {
-    margin: 80px auto 0;
-    max-width: 640px;
-    animation: fadeDown 0.8s 0.7s ease both;
-  }
-  .suggest-title {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(1.2rem, 3vw, 1.8rem);
-    color: var(--accent);
-    letter-spacing: 4px;
-    margin-bottom: 6px;
-  }
-  .suggest-subtitle {
-    font-size: 0.7rem;
-    letter-spacing: 4px;
-    color: #7dd3fc;
-    text-transform: uppercase;
-    margin-bottom: 24px;
-  }
-  .suggest-box {
-    background: rgba(125,211,252,0.04);
-    border: 1px solid rgba(125,211,252,0.2);
-    border-radius: 12px;
-    padding: 24px;
-  }
-  .suggest-box textarea {
-    width: 100%;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(125,211,252,0.25);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.75rem;
-    letter-spacing: 1px;
-    padding: 14px;
-    resize: vertical;
-    min-height: 100px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .suggest-box textarea:focus { border-color: var(--accent); }
-  .suggest-box textarea::placeholder { color: rgba(125,211,252,0.3); }
-  .suggest-btn-row {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 14px;
-    flex-wrap: wrap;
-  }
-  .btn-submit {
-    background: rgba(125,211,252,0.12);
-    border: 1px solid rgba(125,211,252,0.4);
-    color: var(--accent);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.7rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    padding: 10px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s;
-  }
-  .btn-submit:hover { background: rgba(125,211,252,0.22); box-shadow: 0 0 16px rgba(125,211,252,0.2); }
-  .btn-download {
-    background: rgba(255,215,0,0.08);
-    border: 1px solid rgba(255,215,0,0.35);
-    color: var(--gold);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.7rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    padding: 10px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s;
-  }
-  .btn-download:hover { background: rgba(255,215,0,0.16); box-shadow: 0 0 16px rgba(255,215,0,0.15); }
-  .btn-clear {
-    background: rgba(255,34,68,0.07);
-    border: 1px solid rgba(255,34,68,0.3);
-    color: #f87171;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.7rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .btn-clear:hover { background: rgba(255,34,68,0.15); }
-  .suggest-log {
-    margin-top: 20px;
-    text-align: left;
-    max-height: 260px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .suggest-entry {
-    background: rgba(125,211,252,0.04);
-    border-left: 3px solid rgba(125,211,252,0.35);
-    border-radius: 0 8px 8px 0;
-    padding: 10px 14px;
-    font-size: 0.72rem;
-    letter-spacing: 1px;
-    color: #cbd5e1;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .suggest-entry .ts {
-    font-size: 0.55rem;
-    letter-spacing: 2px;
-    color: rgba(125,211,252,0.4);
-    margin-bottom: 4px;
-    text-transform: uppercase;
-  }
-  .suggest-empty-msg {
-    font-size: 0.65rem;
-    letter-spacing: 3px;
-    color: rgba(125,211,252,0.2);
-    text-transform: uppercase;
-    padding: 16px 0;
-  }
-  .toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: rgba(125,211,252,0.15);
-    border: 1px solid rgba(125,211,252,0.4);
-    color: var(--accent);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.65rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    padding: 12px 28px;
-    border-radius: 30px;
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    pointer-events: none;
-    z-index: 999;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  .share-box {
-    margin-top: 16px;
-    display: grid;
-    gap: 12px;
-    text-align: left;
-  }
-  .share-label {
-    font-size: 0.72rem;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: #7dd3fc;
-  }
-  .share-select,
-  .share-file-input {
-    width: 100%;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(125,211,252,0.25);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.8rem;
-    padding: 12px 14px;
-    outline: none;
-  }
-  .share-file-input {
-    cursor: pointer;
-  }
-  .share-filename {
-    font-size: 0.75rem;
-    color: rgba(125,211,252,0.65);
-    padding: 8px 12px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(125,211,252,0.15);
-    border-radius: 8px;
-    overflow-wrap: anywhere;
-  }
-  .share-note {
-    font-size: 0.7rem;
-    letter-spacing: 1px;
-    color: rgba(125,211,252,0.6);
-    margin-top: 6px;
-  }
-
-  @media (max-width: 760px) {
-    body {
-      padding: 20px 14px;
-    }
-    .meet-grid {
-      gap: 18px;
-    }
-    .meet-card {
-      width: 100%;
-      max-width: 100%;
-    }
-    .suggest-box {
-      padding: 20px;
-    }
-    .suggest-btn-row {
-      flex-direction: column;
-      gap: 10px;
-    }
-    .btn-submit,
-    .btn-download,
-    .btn-clear {
-      width: 100%;
-      padding: 14px 16px;
-      font-size: 0.85rem;
-    }
-  }
-
-  /* ── FOOTER ── */
-  footer {
-    margin-top: 80px;
-    font-size: 0.6rem;
-    letter-spacing: 4px;
-    color: rgba(192,132,252,0.3);
-    text-transform: uppercase;
-    animation: fadeDown 0.8s 0.6s ease both;
-  }
-
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -352,6 +122,223 @@
     box-shadow: 0 0 16px rgba(255,215,0,0.15);
   }
 
+  /* ── YOUTUBE VAULT (blank slots) ── */
+  .yt-card {
+    background: rgba(255,34,68,0.05);
+    border: 1px dashed rgba(255,34,68,0.35);
+    border-radius: 12px;
+    padding: 20px;
+    width: 280px;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  }
+  .yt-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--red);
+    box-shadow: 0 8px 30px rgba(255,34,68,0.18);
+  }
+  .yt-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    color: var(--red);
+    border: 1px solid rgba(255,34,68,0.4);
+    background: rgba(255,34,68,0.1);
+    margin-bottom: 12px;
+  }
+  .yt-card .meet-name { margin: 0 0 6px; }
+  .yt-card .video-link {
+    color: var(--red);
+    background: rgba(255,34,68,0.12);
+    border-color: rgba(255,34,68,0.35);
+  }
+  .yt-card .video-link:hover {
+    background: rgba(255,34,68,0.2);
+    box-shadow: 0 0 16px rgba(255,34,68,0.15);
+  }
+
+  /* ── SUGGESTIONS / SHARE ── */
+  .suggest-section {
+    margin: 80px auto 0;
+    max-width: 640px;
+    animation: fadeDown 0.8s 0.7s ease both;
+  }
+  .suggest-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    color: var(--accent);
+    letter-spacing: 4px;
+    margin-bottom: 6px;
+  }
+  .suggest-subtitle {
+    font-size: 0.7rem;
+    letter-spacing: 4px;
+    color: #7dd3fc;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .suggest-box {
+    background: rgba(125,211,252,0.04);
+    border: 1px solid rgba(125,211,252,0.2);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .suggest-box textarea {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(125,211,252,0.25);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 14px;
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .suggest-box textarea:focus { border-color: var(--accent); }
+  .suggest-box textarea::placeholder { color: rgba(125,211,252,0.3); }
+  .suggest-btn-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .btn-submit {
+    background: rgba(125,211,252,0.12);
+    border: 1px solid rgba(125,211,252,0.4);
+    color: var(--accent);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .btn-submit:hover { background: rgba(125,211,252,0.22); box-shadow: 0 0 16px rgba(125,211,252,0.2); }
+  .btn-download {
+    background: rgba(255,215,0,0.08);
+    border: 1px solid rgba(255,215,0,0.35);
+    color: var(--gold);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .btn-download:hover { background: rgba(255,215,0,0.16); box-shadow: 0 0 16px rgba(255,215,0,0.15); }
+  .suggest-log {
+    margin-top: 20px;
+    text-align: left;
+    max-height: 260px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .suggest-entry {
+    background: rgba(125,211,252,0.04);
+    border-left: 3px solid rgba(125,211,252,0.35);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    color: #cbd5e1;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .suggest-entry .ts {
+    font-size: 0.55rem;
+    letter-spacing: 2px;
+    color: rgba(125,211,252,0.4);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+  .suggest-empty-msg {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: rgba(125,211,252,0.2);
+    text-transform: uppercase;
+    padding: 16px 0;
+  }
+
+  .share-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(125,211,252,0.15);
+  }
+  .share-box {
+    margin-top: 16px;
+    display: grid;
+    gap: 12px;
+    text-align: left;
+  }
+  .share-label {
+    font-size: 0.72rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #7dd3fc;
+  }
+  .share-select,
+  .share-file-input {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(125,211,252,0.25);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    padding: 12px 14px;
+    outline: none;
+  }
+  .share-file-input { cursor: pointer; }
+  .share-filename {
+    font-size: 0.75rem;
+    color: rgba(125,211,252,0.65);
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(125,211,252,0.15);
+    border-radius: 8px;
+    overflow-wrap: anywhere;
+  }
+  .share-note {
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    color: rgba(125,211,252,0.6);
+    margin-top: 6px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(125,211,252,0.15);
+    border: 1px solid rgba(125,211,252,0.4);
+    color: var(--accent);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 12px 28px;
+    border-radius: 30px;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
   footer {
     margin-top: 80px;
     font-size: 0.6rem;
@@ -364,6 +351,17 @@
   @keyframes fadeDown {
     from { opacity: 0; transform: translateY(-20px); }
     to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 760px) {
+    body { padding: 20px 14px; }
+    .meet-grid { gap: 18px; }
+    .meet-card,
+    .yt-card { width: 100%; max-width: 100%; }
+    .suggest-box { padding: 20px; }
+    .suggest-btn-row { flex-direction: column; gap: 10px; }
+    .btn-submit,
+    .btn-download { width: 100%; padding: 14px 16px; font-size: 0.85rem; }
   }
 </style>
 </head>
@@ -423,6 +421,54 @@
     </div>
   </div>
 
+  <!-- ══════════════════════════════════════════════════════════════
+       YOUTUBE VAULT — paste an unlisted YouTube link into each href.
+       Format:  href="https://youtu.be/VIDEO_ID"
+       Leave href="" to keep a slot blank. Delete a whole
+       <div class="yt-card"> block if you need fewer slots.
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="meet-section">
+    <h2 class="meet-title">YOUTUBE VAULT</h2>
+    <p class="meet-subtitle">Unlisted links · members only</p>
+    <div class="meet-grid">
+
+      <!-- SLOT 01 -->
+      <div class="yt-card">
+        <span class="yt-badge">Slot 01</span>
+        <p class="meet-name">Untitled clip</p>
+        <p class="meet-role">Add a title</p>
+        <a class="video-link" href="" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      </div>
+
+      <!-- SLOT 02 -->
+      <div class="yt-card">
+        <span class="yt-badge">Slot 02</span>
+        <p class="meet-name">Untitled clip</p>
+        <p class="meet-role">Add a title</p>
+        <a class="video-link" href="" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      </div>
+
+      <!-- SLOT 03 -->
+      <div class="yt-card">
+        <span class="yt-badge">Slot 03</span>
+        <p class="meet-name">Untitled clip</p>
+        <p class="meet-role">Add a title</p>
+        <a class="video-link" href="" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      </div>
+
+      <!-- SLOT 04 -->
+      <div class="yt-card">
+        <span class="yt-badge">Slot 04</span>
+        <p class="meet-name">Untitled clip</p>
+        <p class="meet-role">Add a title</p>
+        <a class="video-link" href="" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      </div>
+
+      <!-- SLOT 05 — copy a block above to add more -->
+
+    </div>
+  </div>
+
   <div style="margin-top: 60px; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
     <a href="./hidden.html" style="display: inline-block; padding: 12px 24px; background: rgba(125,211,252,0.12); border: 1px solid rgba(125,211,252,0.4); color: var(--accent); text-decoration: none; border-radius: 8px; font-size: 0.85rem; letter-spacing: 2px; transition: background 0.2s;">👑 Members Area</a>
   </div>
@@ -431,10 +477,10 @@
     <h2 class="suggest-title">Have Videos?</h2>
     <p class="suggest-subtitle">Send them to me</p>
     <div class="suggest-box">
-      <textarea id="suggest-input" placeholder="if u have any videos send it to me..."></textarea>
+      <textarea id="suggest-input" maxlength="500" placeholder="if u have any videos send it to me..."></textarea>
       <div class="suggest-btn-row">
-        <button class="btn-submit" onclick="submitSuggestion()">Submit</button>
-        <button class="btn-download" onclick="clearInput()">Clear input</button>
+        <button type="button" class="btn-submit" onclick="submitSuggestion()">Submit</button>
+        <button type="button" class="btn-download" onclick="clearInput()">Clear input</button>
       </div>
       <div class="suggest-log" id="suggest-log">
         <div class="suggest-empty-msg">NO SUBMISSIONS YET</div>
@@ -453,8 +499,8 @@
             <option value="googledrive">Google Drive</option>
           </select>
           <div class="suggest-btn-row">
-            <button class="btn-download" onclick="openDriveUpload()">Open upload page</button>
-            <button class="btn-submit" onclick="shareVideo()">Log share request</button>
+            <button type="button" class="btn-download" onclick="openDriveUpload()">Open upload page</button>
+            <button type="button" class="btn-submit" onclick="shareVideo()">Log share request</button>
           </div>
           <p class="share-note">Your browser will open the selected drive page. Use it to upload the file from your device, then share the link back if needed.</p>
         </div>
@@ -464,16 +510,15 @@
 
   <footer>☽ Lunar Gooners · Eyes Open · Always ☾</footer>
 
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
     // ── Suggestions are stored as GitHub Issues on this repo, so every ──
     // ── visitor on every device sees the same list. Reading issues is ──
     // ── public (no key needed); creating one needs a token, which a  ──
     // ── static site can't hold safely — so writes go through a small ──
-    // ── Cloudflare Worker that holds the token instead. See the      ──
-    // ── README in this folder for the two-step setup.                ──
-    const WORKER_URL = 'https://slave01.hack3rzboyzo.workers.dev/'; // <<< set after deploying the Worker
+    // ── Cloudflare Worker that holds the token instead.              ──
+    const WORKER_URL = 'https://slave01.hack3rzboyzo.workers.dev/';
     const GH_OWNER = 'hack3rzboyzo-svg';
     const GH_REPO = 'hack3rzboyzo-svg.github.io';
     const GH_LABEL = 'suggestion';
@@ -486,9 +531,9 @@
     const shareFileName = document.getElementById('share-file-name');
 
     function addLogEntry(timestamp, text) {
-      if (suggestLog.querySelector('.suggest-empty-msg')) {
-        suggestLog.innerHTML = '';
-      }
+      const empty = suggestLog.querySelector('.suggest-empty-msg');
+      if (empty) empty.remove();
+
       const entry = document.createElement('div');
       entry.className = 'suggest-entry';
       const ts = document.createElement('div');
@@ -521,10 +566,6 @@
       const text = suggestInput.value.trim();
       if (!text) { showToast('Please enter something'); return; }
       if (text.length > MAX_LENGTH) { showToast(`Keep it under ${MAX_LENGTH} characters`); return; }
-      if (WORKER_URL.includes('PASTE-YOUR-WORKER-URL-HERE')) {
-        showToast('Submissions aren\'t wired up yet');
-        return;
-      }
       try {
         const response = await fetch(WORKER_URL, {
           method: 'POST',
@@ -553,7 +594,7 @@
         onedrive: 'https://onedrive.live.com/',
         googledrive: 'https://drive.google.com/drive/my-drive'
       };
-      window.open(urls[service], '_blank');
+      window.open(urls[service], '_blank', 'noopener');
       showToast('Opening upload page...');
     }
 
@@ -574,7 +615,7 @@
       shareFileName.textContent = file ? file.name : 'No file selected';
     });
 
-    suggestInput.addEventListener('keypress', (e) => {
+    suggestInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submitSuggestion();
     });
 
