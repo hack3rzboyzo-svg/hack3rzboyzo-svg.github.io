@@ -364,23 +364,4 @@ clearForm.addEventListener("submit", async e => {
   } catch (err) {
     setClear("err", String(err.message || err));
   } finally {
-    clearing = false;
-    clearBtn.disabled = false;
-  }
-});
-
-setInterval(flush, FLUSH_MS);
-setInterval(() => { if (!document.hidden && !drawing && !clearing && pending.size === 0 && !flushing) load(); }, POLL_MS);
-document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
-window.addEventListener("pagehide", () => {
-  if (pending.size && !clearing) {
-    const cells = [...pending].map(([i, c]) => [i % N, Math.floor(i / N), c]);
-    navigator.sendBeacon(API, new Blob([JSON.stringify({ cells })], { type: "application/json" }));
-  }
-});
-
-drawAll();
-load();
-</script>
-</body>
-</html>
+    clearing =
