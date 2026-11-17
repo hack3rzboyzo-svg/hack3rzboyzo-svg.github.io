@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pixel Wall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #17151f;
+    --panel: #221f2e;
+    --line: #38334a;
+    --text: #ece9f5;
+    --muted: #9a94b0;
+    --accent: #ff5d8f;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Bricolage Grotesque", system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 14px 40px;
+    gap: 16px;
+  }
+  header { width: 100%; max-width: 820px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  h1 { margin: 0; font-size: clamp(1.6rem, 5vw, 2.4rem); font-weight: 800; letter-spacing: -0.02em; }
+  header a { color: var(--muted); text-decoration: none; font-size: 0.95rem; }
+  header a:hover, header a:focus-visible { color: var(--text); text-decoration: underline; }
+  .hint { width: 100%; max-width: 820px; margin: -8px 0 0; color: var(--muted); font-size: 0.95rem; }
+
+  .board {
+    width: 100%; max-width: 820px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px;
+  }
+  .scroller { overflow: auto; border-radius: 4px; max-height: 80vh; }
+  canvas {
+    display: block;
+    width: 100%;
+    min-width: 520px;
+    aspect-ratio: 1 / 1;
+    image-rendering: pixelated;
+    cursor: crosshair;
+    touch-action: none;
+    background: #fff;
+  }
+
+  .tools { width: 100%; max-width: 820px; display: flex; flex-direction: column; gap: 12px; }
+  .palette { display: grid; grid-template-columns: repeat(16, 1fr); gap: 4px; }
+  .swatch {
+    aspect-ratio: 1 / 1; border: 2px solid transparent; border-radius: 4px; padding: 0; cursor: pointer;
+    outline: 1px solid rgba(255,255,255,.14); outline-offset: -3px;
+  }
+  .swatch[aria-pressed="true"] { border-color: var(--accent); outline-color: #000; }
+  .swatch:focus-visible { border-color: var(--text); }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 0.92rem; }
+  .row label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .status { display: inline-flex; align-items: center; gap: 8px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #888; }
+  .dot.ok { background: #4cd98a; }
+  .dot.sync { background: #ffc552; }
+  .dot.err { background: #ff5d5d; }
+  #pos { font-variant-numeric: tabular-nums; min-width: 9ch; }
+  #cur { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); vertical-align: -2px; }
+  @media (max-width: 560px) { .palette { grid-template-columns: repeat(8, 1fr); } }
+
+  .admin { width: 100%; max-width: 820px; }
+  .admin details { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); overflow: hidden; }
+  .admin summary { cursor: pointer; padding: 12px 14px; color: var(--muted); font-weight: 500; }
+  .admin summary:hover, .admin details[open] summary { color: var(--text); }
+  .admin details[open] summary { border-bottom: 1px solid var(--line); }
+  .admin form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 14px; }
+  .admin input[type=password] {
+    flex: 1 1 190px; min-width: 0; padding: 9px 11px; border-radius: 7px;
+    border: 1px solid var(--line); background: #17151f; color: var(--text); font: inherit;
+  }
+  .admin input[type=password]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .admin form label { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 0.9rem; cursor: pointer; }
+  .admin button {
+    padding: 9px 16px; border-radius: 7px; border: 1px solid var(--line);
+    background: var(--accent); color: #17151f; font: inherit; font-weight: 800; cursor: pointer;
+  }
+  .admin button:disabled { opacity: .55; cursor: default; }
+  #clearStatus { font-size: 0.9rem; color: var(--muted); }
+  #clearStatus.ok { color: #4cd98a; }
+  #clearStatus.err { color: #ff5d5d; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Pixel Wall</h1>
+  <a href="/">Back to site</a>
+</header>
+<p class="hint">10,000 squares, shared by everyone who visits. Pick a colour and click or drag to paint.</p>
+
+<main class="board">
+  <div class="scroller"><canvas id="c" width="800" height="800" aria-label="Shared 100 by 100 pixel grid"></canvas></div>
+</main>
+
+<section class="tools">
+  <div class="palette" id="palette" role="group" aria-label="Colour palette"></div>
+  <div class="row">
+    <span>Colour <span id="cur"></span> &nbsp; Square <span id="pos">-</span></span>
+    <label><input type="checkbox" id="gridlines" checked> Grid lines</label>
+    <span class="status"><span class="dot" id="dot"></span><span id="statusText">Loading</span></span>
+  </div>
+</section>
+
+<section class="admin">
+  <details id="adminBox">
+    <summary>Clear the board</summary>
+    <form id="clearForm" autocomplete="off">
+      <input type="password" id="pw" placeholder="Password" autocomplete="current-password" aria-label="Clear password">
+      <label><input type="checkbox" id="remember"> Remember for this tab</label>
+      <button type="submit" id="clearBtn">Clear board</button>
+      <span id="clearStatus" role="status" aria-live="polite"></span>
+    </form>
+  </details>
+</section>
+
+<script>
+// ====== CONFIG ======
+const API = "https://slave01.hack3rzboyzo.workers.dev/grid"; // your Worker + /grid
+const N = 100;          // grid is N x N
+const CELL = 8;         // pixels per cell on the canvas
+const POLL_MS = 8000;   // how often to pull other people's changes
+const FLUSH_MS = 1200;  // how often to send your changes
+
+// 32 colours. Index 0 is white and works as the eraser. Order must match the Worker.
+const PALETTE = [
+  "#ffffff","#e4e4e4","#888888","#222222","#ffa7d1","#e50000","#e59500","#a06a42",
+  "#e5d900","#94e044","#02be01","#00d3dd","#0083c7","#0000ea","#cf6ee4","#820080",
+  "#ffdfcc","#ff8a8a","#ffcf99","#d2b48c","#fff6a0","#c6f5a0","#7fd99a","#a0f0f0",
+  "#7fb8ff","#a0a0ff","#e0b0ff","#ff7fbf","#5c3a21","#6b8e23","#1b3a5c","#4b0f2f"
+];
+// ====================
+
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+canvas.width = canvas.height = N * CELL;
+
+const grid = new Uint8Array(N * N);
+const pending = new Map();   // cells painted locally, not sent yet
+let inflight = new Map();    // cells currently being sent
+let color = 5;
+let showLines = true;
+
+// ---------- palette ----------
+const palEl = document.getElementById("palette");
+const curEl = document.getElementById("cur");
+PALETTE.forEach((hex, i) => {
+  const b = document.createElement("button");
+  b.className = "swatch";
+  b.style.background = hex;
+  b.setAttribute("aria-label", "Colour " + (i + 1));
+  b.setAttribute("aria-pressed", i === color ? "true" : "false");
+  b.onclick = () => { color = i; refreshPalette(); };
+  palEl.appendChild(b);
+});
+function refreshPalette() {
+  [...palEl.children].forEach((b, i) => b.setAttribute("aria-pressed", i === color ? "true" : "false"));
+  curEl.style.background = PALETTE[color];
+}
+refreshPalette();
+
+// ---------- drawing ----------
+function drawCell(x, y) {
+  ctx.fillStyle = PALETTE[grid[y * N + x]];
+  ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+  if (showLines) {
+    ctx.strokeStyle = "rgba(0,0,0,0.12)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x * CELL + 0.5, y * CELL + 0.5, CELL - 1, CELL - 1);
+  }
+}
+function drawAll() {
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) drawCell(x, y);
+}
+document.getElementById("gridlines").onchange = e => { showLines = e.target.checked; drawAll(); };
+
+// ---------- painting ----------
+function paint(x, y) {
+  if (x < 0 || y < 0 || x >= N || y >= N) return;
+  const i = y * N + x;
+  if (grid[i] === color) return;
+  grid[i] = color;
+  pending.set(i, color);
+  drawCell(x, y);
+}
+function cellAt(e) {
+  const r = canvas.getBoundingClientRect();
+  return [Math.floor((e.clientX - r.left) / r.width * N), Math.floor((e.clientY - r.top) / r.height * N)];
+}
+function line(x0, y0, x1, y1) {   // Bresenham, so fast drags leave no gaps
+  const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0);
+  const sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+  let err = dx + dy;
+  for (;;) {
+    paint(x0, y0);
+    if (x0 === x1 && y0 === y1) break;
+    const e2 = 2 * err;
+    if (e2 >= dy) { err += dy; x0 += sx; }
+    if (e2 <= dx) { err += dx; y0 += sy; }
+  }
+}
+let drawing = false, last = null;
+canvas.addEventListener("pointerdown", e => {
+  drawing = true; canvas.setPointerCapture(e.pointerId);
+  last = cellAt(e); paint(last[0], last[1]);
+});
+canvas.addEventListener("pointermove", e => {
+  const [x, y] = cellAt(e);
+  document.getElementById("pos").textContent = (x >= 0 && y >= 0 && x < N && y < N) ? x + ", " + y : "-";
+  if (!drawing) return;
+  line(last[0], last[1], x, y); last = [x, y];
+});
+const stop = () => { drawing = false; last = null; flush(); };
+canvas.addEventListener("pointerup", stop);
+canvas.addEventListener("pointercancel", stop);
+
+// ---------- sync ----------
+const dot = document.getElementById("dot"), statusText = document.getElementById("statusText");
+function setStatus(kind, text) { dot.className = "dot " + kind; statusText.textContent = text; }
+
+function decode(str) {
+  const CHARS = "0123456789abcdefghijklmnopqrstuv";
+  let changed = false;
+  for (let i = 0; i < N * N; i++) {
+    if (pending.has(i) || inflight.has(i)) continue;   // don't overwrite your own unsent work
+    const v = CHARS.indexOf(str[i]);
+    if (v >= 0 && grid[i] !== v) { grid[i] = v; changed = true; }
+  }
+  return changed;
+}
+
+async function load() {
+  try {
+    const res = await fetch(API, { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    if (decode(data.grid)) drawAll();
+    setStatus("ok", "Live");
+  } catch (err) {
+    setStatus("err", "Can't reach server");
+  }
+}
+
+let flushing = false;
+async function flush() {
+  if (clearing || flushing || pending.size === 0) return;
+  flushing = true;
+  inflight = new Map(pending);
+  pending.clear();
+  setStatus("sync", "Saving");
+  try {
+    const cells = [...inflight].map(([i, c]) => [i % N, Math.floor(i / N), c]);
+    const res = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cells })
+    });
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    inflight = new Map();
+    if (data.grid && decode(data.grid)) drawAll();
+    setStatus("ok", "Saved");
+  } catch (err) {
+    for (const [i, c] of inflight) if (!pending.has(i)) pending.set(i, c);  // retry next time
+    inflight = new Map();
+    setStatus("err", "Save failed, retrying");
+  } finally {
+    flushing = false;
+  }
+}
+
+// ---------- admin: clear the board ----------
+const clearForm = document.getElementById("clearForm");
+const pwEl = document.getElementById("pw");
+const clearBtn = document.getElementById("clearBtn");
+const clearStatusEl = document.getElementById("clearStatus");
+const rememberEl = document.getElementById("remember");
+
+let clearing = false;
+let keyCache = null; // { id, key } — derived key, reused while the password is unchanged
+
+function setClear(kind, text) { clearStatusEl.className = kind; clearStatusEl.textContent = text; }
+
+try {
+  const saved = sessionStorage.getItem("pw");
+  if (saved) { pwEl.value = saved; rememberEl.checked = true; }
+} catch {}
+
+const toHex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+
+// PBKDF2 the password into an HMAC key, then sign the server's nonce with it.
+// The password itself never goes over the wire.
+async function proofFor(password, salt, iterations, nonce) {
+  const id = iterations + "|" + salt + "|" + password;
+  if (!keyCache || keyCache.id !== id) {
+    const base = await crypto.subtle.importKey(
+      "raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]
+    );
+    const bits = await crypto.subtle.deriveBits(
+      { name: "PBKDF2", salt: new TextEncoder().encode(salt), iterations, hash: "SHA-256" },
+      base, 256
+    );
+    const key = await crypto.subtle.importKey("raw", bits, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    keyCache = { id, key };
+  }
+  return toHex(await crypto.subtle.sign("HMAC", keyCache.key, new TextEncoder().encode(nonce)));
+}
+
+clearForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  if (clearing) return;
+
+  const pw = pwEl.value;
+  if (!pw) { setClear("err", "Enter the password"); pwEl.focus(); return; }
+  if (!confirm("Clear all 10,000 squares? This can't be undone.")) return;
+
+  clearing = true;
+  clearBtn.disabled = true;
+  try {
+    setClear("", "Requesting challenge…");
+    const cr = await fetch(API + "/challenge", { cache: "no-store" });
+    const ch = await cr.json().catch(() => ({}));
+    if (!cr.ok) throw new Error(ch.error || "No challenge issued");
+
+    setClear("", "Deriving key…");
+    const proof = await proofFor(pw, ch.salt, ch.iterations, ch.nonce);
+
+    setClear("", "Clearing…");
+    const res = await fetch(API + "/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nonce: ch.nonce, proof })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Rejected");
+
+    // drop local work so a stale flush can't repaint the old board
+    pending.clear();
+    inflight = new Map();
+    if (data.grid) { decode(data.grid); drawAll(); }
+
+    try {
+      if (rememberEl.checked) sessionStorage.setItem("pw", pw);
+      else sessionStorage.removeItem("pw");
+    } catch {}
+
+    setClear("ok", "Board cleared");
+    load();
+  } catch (err) {
+    setClear("err", String(err.message || err));
+  } finally {
+    clearing = false;
+    clearBtn.disabled = false;
+  }
+});
+
+setInterval(flush, FLUSH_MS);
+setInterval(() => { if (!document.hidden && !drawing && !clearing && pending.size === 0 && !flushing) load(); }, POLL_MS);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+window.addEventListener("pagehide", () => {
+  if (pending.size && !clearing) {
+    const cells = [...pending].map(([i, c]) => [i % N, Math.floor(i / N), c]);
+    navigator.sendBeacon(API, new Blob([JSON.stringify({ cells })], { type: "application/json" }));
+  }
+});
+
+drawAll();
+load();
+</script>
+</body>
+</html>
